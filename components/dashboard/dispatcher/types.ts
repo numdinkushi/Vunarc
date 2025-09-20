@@ -1,0 +1,47 @@
+export interface DispatcherStats {
+    totalDeliveries: number;
+    activeDeliveries: number;
+    completedDeliveries: number;
+    totalEarnings: number;
+}
+
+export interface DispatcherOrder {
+    _id: string;
+    products: OrderProduct[];
+    totalCost: number;
+    orderStatus: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'in_transit' | 'arrived' | 'delivered' | 'cancelled';
+    paymentStatus: 'paid' | 'pending' | 'failed';
+    paymentMethod: 'lisk_zar' | 'celo' | 'cash';
+    createdAt: string;
+    deliveryAddress: string;
+    estimatedDeliveryTime?: string;
+    riderName?: string;
+    farmName: string;
+    customerName: string;
+    customerPhone: string;
+}
+
+export interface OrderProduct {
+    name: string;
+    quantity: number;
+    price: number;
+}
+
+export interface StatCardProps {
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    title: string;
+    value: string | number;
+    trend?: string;
+    color: string;
+}
+
+export interface DeliveryCardProps {
+    order: DispatcherOrder;
+    showActions?: boolean;
+}
+
+export interface TabItem {
+    id: string;
+    label: string;
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+} 
