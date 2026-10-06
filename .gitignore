@@ -44,3 +44,14 @@ next-env.d.ts
 /.clerk/
 
 rough.env.local
+
+# local dumps, logs, and backups
+tmp/
+*.log
+*.backup
+*.zip
+
+# Hardhat build output
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
