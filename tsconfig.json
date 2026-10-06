@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -19,9 +19,12 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@ethereumjs/tx/src/*": ["./node_modules/@ethereumjs/tx/dist/*"],
+      "@ethereumjs/util/src/*": ["./node_modules/@ethereumjs/util/dist/*"],
+      "@ethereumjs/common/src/*": ["./node_modules/@ethereumjs/common/dist/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "contracts"]
 }

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "node scripts/patch-declaration-imports.mjs",
     "dev": "next dev",
     "fast": "next dev --turbo",
     "build": "next build",
@@ -64,7 +65,7 @@
     "react-day-picker": "^9.8.1",
     "react-dom": "19.1.0",
     "react-dropzone": "^14.3.8",
-    "react-hook-form": "^7.62.0",
+    "react-hook-form": "^7.89.0",
     "react-resizable-panels": "^3.0.4",
     "recharts": "^2.15.4",
     "sharp": "^0.34.3",

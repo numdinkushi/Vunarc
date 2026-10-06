@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
-import { Button } from './button';
 import { Label } from './label';
 
 interface ProfileImageUploadProps {
@@ -106,11 +106,13 @@ export function ProfileImageUpload({
                             <Label className="text-sm font-medium text-gray-700">Current Profile Picture</Label>
                         </div>
                         <div className="relative inline-block group">
-                            <div className="relative">
-                                <img
+                            <div className="relative h-32 w-32">
+                                <Image
                                     src={uploadedImages[0]}
                                     alt="Profile preview"
-                                    className="w-32 h-32 rounded-lg object-cover border-2 shadow-sm transition-all duration-200 border-gray-200"
+                                    fill
+                                    sizes="128px"
+                                    className="rounded-lg object-cover border-2 shadow-sm transition-all duration-200 border-gray-200"
                                 />
                                 {/* Overlay on hover */}
                                 <div className="absolute inset-0 hover:bg-black/10 bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 rounded-lg flex items-center justify-center">

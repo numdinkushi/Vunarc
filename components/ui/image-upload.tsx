@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
+import Image from 'next/image';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { Progress } from './progress';
 import { cn } from '../../lib/utils';
 
@@ -141,11 +142,13 @@ export function ImageUpload({ onImagesUploaded, maxImages = 5, className }: Imag
                     <h4 className="text-sm font-medium text-gray-700">Uploaded Images</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         {uploadedImages.map((url, index) => (
-                            <div key={index} className="relative group">
-                                <img
+                            <div key={index} className="relative group h-24">
+                                <Image
                                     src={url}
                                     alt={`Product image ${index + 1}`}
-                                    className="w-full h-24 object-cover rounded-lg border"
+                                    fill
+                                    sizes="200px"
+                                    className="object-cover rounded-lg border"
                                 />
                                 <button
                                     onClick={() => removeImage(index)}

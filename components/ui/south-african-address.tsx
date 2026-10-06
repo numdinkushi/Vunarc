@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Label } from './label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Input } from './input';
@@ -31,33 +31,23 @@ export function SouthAfricanAddress({ value, onChange, label, className }: South
     // Get available cities based on selected province
     const availableCities = value.province ? getCitiesByProvince(value.province) : [];
 
-    // Update coordinates when city or province changes
     useEffect(() => {
-        if (value.city && value.province) {
-            const coordinates = getCityCoordinates(value.city, value.province);
-            if (coordinates) {
-                handleAddressChange('coordinates', coordinates);
-            }
-        }
-    }, [value.city, value.province]);
-
-    // Update full address when any field changes
-    useEffect(() => {
+        const coordinates = value.city && value.province
+            ? getCityCoordinates(value.city, value.province)
+            : null;
         const fullAddress = [value.streetAddress, value.city, value.province, value.postalCode]
             .filter(Boolean)
             .join(', ');
-        handleAddressChange('fullAddress', fullAddress);
-    }, [value.streetAddress, value.city, value.province, value.postalCode]);
-
-    // Update full address when coordinates change
-    useEffect(() => {
-        if (value.coordinates) {
-            const fullAddress = [value.streetAddress, value.city, value.province, value.postalCode]
-                .filter(Boolean)
-                .join(', ');
-            handleAddressChange('fullAddress', fullAddress);
-        }
-    }, [value.coordinates]);
+        const nextCoordinates = coordinates ?? value.coordinates;
+        const coordinatesMatch = nextCoordinates?.lat === value.coordinates?.lat
+            && nextCoordinates?.lng === value.coordinates?.lng;
+        if (coordinatesMatch && fullAddress === value.fullAddress) return;
+        onChange({
+            ...value,
+            coordinates: nextCoordinates,
+            fullAddress,
+        });
+    }, [value, onChange]);
 
     return (
         <div className={`space-y-4 ${className}`}>

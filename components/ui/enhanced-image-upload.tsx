@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useRef } from 'react';
+import Image from 'next/image';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, Image as ImageIcon, FolderOpen } from 'lucide-react';
+import { Upload, X, FolderOpen } from 'lucide-react';
 import { Progress } from './progress';
 import { Button } from './button';
 import { cn } from '../../lib/utils';
@@ -23,7 +24,7 @@ export function EnhancedImageUpload({
     const [uploadProgress, setUploadProgress] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const uploadImages = async (files: File[]): Promise<void> => {
+    const uploadImages = useCallback(async (files: File[]): Promise<void> => {
         if (files.length === 0) return;
 
         setIsUploading(true);
@@ -75,7 +76,7 @@ export function EnhancedImageUpload({
             setIsUploading(false);
             setTimeout(() => setUploadProgress(0), 1000);
         }
-    };
+    }, [uploadedImages, onImagesUploaded]);
 
     const handleFileSelect = useCallback((acceptedFiles: File[]) => {
         if (uploadedImages.length + acceptedFiles.length > maxImages) {
@@ -83,7 +84,7 @@ export function EnhancedImageUpload({
             return;
         }
         uploadImages(acceptedFiles);
-    }, [uploadedImages.length, maxImages]);
+    }, [uploadedImages.length, maxImages, uploadImages]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         handleFileSelect(acceptedFiles);
@@ -190,11 +191,13 @@ export function EnhancedImageUpload({
                     </h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         {uploadedImages.map((url, index) => (
-                            <div key={index} className="relative group">
-                                <img
+                            <div key={index} className="relative group h-24">
+                                <Image
                                     src={url}
                                     alt={`Product image ${index + 1}`}
-                                    className="w-full h-24 object-cover rounded-lg border"
+                                    fill
+                                    sizes="200px"
+                                    className="object-cover rounded-lg border"
                                 />
                                 <button
                                     type="button"

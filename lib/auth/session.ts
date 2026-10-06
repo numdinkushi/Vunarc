@@ -46,6 +46,7 @@ export function readSessionToken(token: string): AuthUser | null {
             lastName: payload.lastName || '',
             imageUrl: payload.imageUrl || null,
             authProvider: payload.authProvider || AuthProvider.Wallet,
+            walletAddress: payload.walletAddress || '',
         };
     } catch {
         return null;

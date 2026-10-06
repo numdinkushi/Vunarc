@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { ImageUpload } from './image-upload';
 import { Button } from './button';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
@@ -32,11 +33,15 @@ export function ImageUploadTest() {
                         <div className="grid grid-cols-2 gap-4">
                             {uploadedImages.map((url, index) => (
                                 <div key={index} className="space-y-2">
-                                    <img
-                                        src={url}
-                                        alt={`Test image ${index + 1}`}
-                                        className="w-full h-32 object-cover rounded-lg border"
-                                    />
+                                    <div className="relative h-32">
+                                        <Image
+                                            src={url}
+                                            alt={`Test image ${index + 1}`}
+                                            fill
+                                            sizes="300px"
+                                            className="object-cover rounded-lg border"
+                                        />
+                                    </div>
                                     <p className="text-xs text-gray-500 truncate">{url}</p>
                                 </div>
                             ))}

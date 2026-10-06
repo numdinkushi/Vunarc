@@ -92,5 +92,6 @@ export async function verifyGoogleIdToken(idToken: string): Promise<AuthUser> {
         lastName: payload.family_name || '',
         imageUrl: payload.picture || null,
         authProvider: AuthProvider.Wallet,
+        walletAddress: '',
     };
 }

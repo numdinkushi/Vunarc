@@ -1,3 +1,5 @@
+import { api } from '@/convex/_generated/api';
+import { getConvexClient } from '@/lib/convex/client';
 import type { AuthUser } from '@/types/user';
 
 export interface ConvexUserSyncPayload {
@@ -22,4 +24,11 @@ export function toConvexUserSyncPayload(user: AuthUser, options?: { arcAddress?:
 
 function shortFallback(id: string): string {
     return id.length > 10 ? `${id.slice(0, 6)}…${id.slice(-4)}` : id;
+}
+
+export async function syncAuthUserToConvex(user: AuthUser): Promise<void> {
+    await getConvexClient().mutation(
+        api.users.createBasicUserProfile,
+        toConvexUserSyncPayload(user),
+    );
 }
