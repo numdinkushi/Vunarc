@@ -1,4 +1,4 @@
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/hooks/use-user';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { PaymentMethod } from '@/constants';
@@ -57,7 +57,7 @@ export function useWalletProfile(): WalletProfileResult {
     // Update wallet data
     const updateWalletDataFunc = async (data: {
         walletAddress?: string;
-        celoAddress?: string;
+        arcAddress?: string;
         walletConnectedAt?: number;
         walletProvider?: string;
     }) => {

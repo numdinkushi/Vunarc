@@ -1,5 +1,7 @@
 # Services Architecture
 
+> USDC payments settle on Arc through `hooks/use-usdc-order-processing.ts` and `VunarcPayments`. See [Arc payments](../../docs/ARC_INTEGRATION.md).
+
 This directory contains a clean, well-structured service layer following SOLID and DRY principles.
 
 ## Directory Structure
@@ -60,7 +62,7 @@ const user = await stablecoinApi.createUser({
 // Create payment
 const payment = await stablecoinApi.createPayment({
     amount: 100,
-    currency: 'ZAR',
+    currency: 'USDC',
     paymentIdentifier: 'user-payment-id',
     description: 'Order payment'
 });

@@ -1,7 +1,7 @@
-const CACHE_VERSION = 'v1.0.3';
-const STATIC_CACHE = `vunalet-static-${CACHE_VERSION}`;
-const DYNAMIC_CACHE = `vunalet-dynamic-${CACHE_VERSION}`;
-const API_CACHE = `vunalet-api-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v1.0.5-no-rk';
+const STATIC_CACHE = `vunarc-static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `vunarc-dynamic-${CACHE_VERSION}`;
+const API_CACHE = `vunarc-api-${CACHE_VERSION}`;
 
 // Essential static assets to cache immediately
 const STATIC_ASSETS = [
@@ -226,7 +226,7 @@ async function handleNavigationRequest(request) {
       `<!DOCTYPE html>
       <html>
         <head>
-          <title>Vunalet - Offline</title>
+          <title>Vunarc - Offline</title>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <style>
@@ -253,7 +253,7 @@ async function handleNavigationRequest(request) {
           <div class="container">
             <div class="emoji">🌱</div>
             <h1>You're Offline</h1>
-            <p>Vunalet is currently unavailable. Please check your internet connection and try again.</p>
+            <p>Vunarc is currently unavailable. Please check your internet connection and try again.</p>
             <button onclick="window.location.reload()" style="
               background: #22c55e; 
               color: white; 
@@ -337,11 +337,11 @@ self.addEventListener('push', (event) => {
         }
       ],
       requireInteraction: false,
-      tag: data.tag || 'vunalet-notification'
+      tag: data.tag || 'vunarc-notification'
     };
     
     event.waitUntil(
-      self.registration.showNotification(data.title || 'Vunalet', options)
+      self.registration.showNotification(data.title || 'Vunarc', options)
     );
   } catch (error) {
     console.error('[SW] Error handling push notification:', error);

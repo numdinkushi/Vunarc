@@ -23,7 +23,7 @@ export function OrderActions({
 }: OrderActionsProps) {
     if (order.orderStatus === 'arrived') {
         // For CELO orders, don't show any buttons (Pay button and Cancel are handled elsewhere)
-        if (order.paymentMethod === 'celo') {
+        if (order.paymentMethod === 'usdc') {
             return null; // No buttons needed for CELO orders
         }
 

@@ -10,6 +10,7 @@ export function BalanceDisplay() {
         getBalanceColor,
         getBalanceIcon,
         formatLedgerBalance,
+        formatUsdc,
         userRole,
         isLoading,
         isRefreshing,
@@ -67,7 +68,7 @@ export function BalanceDisplay() {
                         Wallet Balance:
                     </span>
                     <span className={`font-bold ${getBalanceColor('wallet', walletBalance)}`}>
-                        R{walletBalance.toFixed(2)}
+                        {formatUsdc(walletBalance)}
                     </span>
                 </motion.div>
                 <motion.div

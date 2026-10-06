@@ -5,7 +5,7 @@ import { api } from '../convex/_generated/api';
 import { toast } from 'sonner';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseEther } from 'viem';
-import { CELO_CONTRACT_ADDRESS, VUNALET_PAYMENTS_ABI } from '../constants/celo';
+import { CELO_CONTRACT_ADDRESS, VUNARC_PAYMENTS_ABI } from '../constants/celo';
 import { PAYMENT_SECURITY, convertZarToCelo, calculatePlatformFee } from '../constants/payments';
 import { Id } from '../convex/_generated/dataModel';
 
@@ -295,7 +295,7 @@ export function useCeloOrderProcessing() {
             // Process CELO payment through smart contract
             await writeContract({
                 address: CELO_CONTRACT_ADDRESS,
-                abi: VUNALET_PAYMENTS_ABI,
+                abi: VUNARC_PAYMENTS_ABI,
                 functionName: 'processOrderPayment',
                 args: [
                     orderId,

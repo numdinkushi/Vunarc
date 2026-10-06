@@ -1,4 +1,4 @@
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/hooks/use-user';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../convex/_generated/api';
 import { useState } from 'react';
@@ -31,65 +31,17 @@ interface OrderData {
     deliveryDistance: number;
     deliveryCost: number;
     totalCost: number;
-    paymentMethod: 'lisk_zar' | 'celo' | 'cash';
+    paymentMethod: 'usdc' | 'cash';
     paymentStatus: 'pending' | 'paid' | 'failed';
     orderStatus: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'in_transit' | 'arrived' | 'delivered' | 'cancelled';
     specialInstructions?: string;
     estimatedPickupTime?: string;
     estimatedDeliveryTime?: string;
     // CELO payment recipient addresses
-    celoFarmerAddress?: string;
-    celoDispatcherAddress?: string;
-    celoPlatformAddress?: string;
+    usdcFarmerAddress?: string;
+    usdcDispatcherAddress?: string;
+    usdcPlatformAddress?: string;
 }
-
-interface UserProfile {
-    clerkUserId: string;
-    role?: 'buyer' | 'farmer' | 'dispatcher';
-    liskId?: string;
-    // ... other fields
-}
-
-// Helper function to validate buyer's wallet balance
-const validateBuyerBalance = async (liskId: string, totalCost: number): Promise<{ isValid: boolean; currentBalance: number; error?: string; }> => {
-    try {
-        // Get current balance from stablecoin API
-        const response = await fetch(`/api/stablecoin/balance/${liskId}`);
-
-        if (!response.ok) {
-            return {
-                isValid: false,
-                currentBalance: 0,
-                error: 'Unable to verify wallet balance. Please refresh your balance and try again.'
-            };
-        }
-
-        const data = await response.json();
-        const tokens = data?.tokens || [];
-        const zarToken = tokens.find((t: { name: string; balance: string | number; }) => t.name === 'L ZAR Coin');
-        const currentBalance = zarToken ? Number(zarToken.balance) : 0;
-
-        if (currentBalance < totalCost) {
-            return {
-                isValid: false,
-                currentBalance,
-                error: `Insufficient funds. You have R${currentBalance.toFixed(2)} but need R${totalCost.toFixed(2)}. Please add funds to your wallet.`
-            };
-        }
-
-        return {
-            isValid: true,
-            currentBalance
-        };
-    } catch (error) {
-        console.error('Failed to validate buyer balance:', error);
-        return {
-            isValid: false,
-            currentBalance: 0,
-            error: 'Unable to verify wallet balance. Please try again.'
-        };
-    }
-};
 
 export function useOrderManagement() {
     const { user } = useUser();
@@ -125,24 +77,10 @@ export function useOrderManagement() {
             return;
         }
 
-        // Check if userProfile exists but doesn't have liskId
-        if (!userProfile?.liskId) {
-            toast.error('Payment account not found. Please complete your profile setup.');
-            return;
-        }
-
         setIsProcessing(true);
 
         try {
-            // 1. Validate buyer's wallet balance before creating order
-            const balanceValidation = await validateBuyerBalance(userProfile.liskId, orderData.totalCost);
-
-            if (!balanceValidation.isValid) {
-                toast.error(balanceValidation.error || 'Balance validation failed');
-                return;
-            }
-
-            // 2. Auto-assign dispatcher
+            // Auto-assign dispatcher
             const dispatcherAssignment = await autoAssignDispatcher({
                 deliveryAddress: orderData.deliveryAddress,
                 deliveryCoordinates: orderData.deliveryCoordinates,

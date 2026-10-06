@@ -19,55 +19,61 @@ interface Dispatcher {
     clerkUserId: string;
 }
 
-// Create basic user profile (without role)
+// Create basic user profile (without role). clerkUserId stores the Google subject id.
 export const createBasicUserProfile = mutation({
     args: {
-        celoAddress: v.optional(v.string()),
+        arcAddress: v.optional(v.string()),
         clerkUserId: v.string(),
         email: v.string(),
         firstName: v.string(),
         lastName: v.string(),
+        profilePicture: v.optional(v.string()),
         // Stablecoin API data (optional)
         liskId: v.optional(v.string()),
         publicKey: v.optional(v.string()),
         paymentIdentifier: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
-        console.log('Creating/updating basic user profile:', args);
-
         const existingProfile = await ctx.db
             .query("userProfiles")
             .withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", args.clerkUserId))
             .first();
 
         if (existingProfile) {
-            // Update existing profile with basic info
-            console.log('Updating existing profile with stablecoin data');
-            const result = await ctx.db.patch(existingProfile._id, {
-                ...args,
+            return await ctx.db.patch(existingProfile._id, {
+                email: args.email,
+                firstName: args.firstName,
+                lastName: args.lastName,
+                ...(args.profilePicture ? { profilePicture: args.profilePicture } : {}),
+                ...(args.arcAddress ? { arcAddress: args.arcAddress } : {}),
+                ...(args.liskId ? { liskId: args.liskId } : {}),
+                ...(args.publicKey ? { publicKey: args.publicKey } : {}),
+                ...(args.paymentIdentifier ? { paymentIdentifier: args.paymentIdentifier } : {}),
                 updatedAt: Date.now(),
             });
-            console.log('Profile updated successfully:', result);
-            return result;
-        } else {
-            // Create new basic profile
-            console.log('Creating new basic profile with stablecoin data');
-            const result = await ctx.db.insert("userProfiles", {
-                ...args,
-                isVerified: false,
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-            });
-            console.log('Profile created successfully:', result);
-            return result;
         }
+
+        return await ctx.db.insert("userProfiles", {
+            clerkUserId: args.clerkUserId,
+            email: args.email,
+            firstName: args.firstName,
+            lastName: args.lastName,
+            profilePicture: args.profilePicture,
+            arcAddress: args.arcAddress,
+            liskId: args.liskId,
+            publicKey: args.publicKey,
+            paymentIdentifier: args.paymentIdentifier,
+            isVerified: false,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
     },
 });
 
 // Create or update user profile
 export const createUserProfile = mutation({
     args: {
-        celoAddress: v.optional(v.string()),
+        arcAddress: v.optional(v.string()),
         clerkUserId: v.string(),
         email: v.string(),
         role: v.optional(v.union(v.literal("farmer"), v.literal("dispatcher"), v.literal("buyer"))),
@@ -121,7 +127,7 @@ export const createUserProfile = mutation({
 // Get user profile by Clerk user ID
 export const getUserProfile = query({
     args: {
-        celoAddress: v.optional(v.string()), clerkUserId: v.string() },
+        arcAddress: v.optional(v.string()), clerkUserId: v.string() },
     handler: async (ctx, args) => {
 
         console.log('getUserProfile called with args:', args);
@@ -144,7 +150,7 @@ export const getUserProfile = query({
 
 export const getUserById = query({
     args: {
-        celoAddress: v.optional(v.string()),
+        arcAddress: v.optional(v.string()),
         userId: v.id("userProfiles"),
     },
     handler: async (ctx, args) => {
@@ -156,7 +162,7 @@ export const getUserById = query({
 // Get all users by role
 export const getUsersByRole = query({
     args: {
-        celoAddress: v.optional(v.string()), role: v.union(v.literal("farmer"), v.literal("dispatcher"), v.literal("buyer")) },
+        arcAddress: v.optional(v.string()), role: v.union(v.literal("farmer"), v.literal("dispatcher"), v.literal("buyer")) },
     handler: async (ctx, args) => {
         return await ctx.db
             .query("userProfiles")
@@ -168,7 +174,7 @@ export const getUsersByRole = query({
 // Update user profile
 export const updateUserProfile = mutation({
     args: {
-        celoAddress: v.optional(v.string()),
+        arcAddress: v.optional(v.string()),
         clerkUserId: v.string(),
         firstName: v.optional(v.string()),
         lastName: v.optional(v.string()),
@@ -210,7 +216,7 @@ export const updateUserProfile = mutation({
 // Verify user (admin function)
 export const verifyUser = mutation({
     args: {
-        celoAddress: v.optional(v.string()), clerkUserId: v.string() },
+        arcAddress: v.optional(v.string()), clerkUserId: v.string() },
     handler: async (ctx, args) => {
         const profile = await ctx.db
             .query("userProfiles")
@@ -234,7 +240,6 @@ export const getFarmers = query({
         return await ctx.db
             .query("userProfiles")
             .withIndex("by_role", (q) => q.eq("role", "farmer"))
-            .filter((q) => q.eq(q.field("isVerified"), true))
             .collect();
     },
 });
@@ -316,7 +321,7 @@ export const getDispatchers = query({
 // Update Lisk ZAR user data
 export const updateLiskUserData = mutation({
     args: {
-        celoAddress: v.optional(v.string()),
+        arcAddress: v.optional(v.string()),
         clerkUserId: v.string(),
         liskId: v.string(),
         publicKey: v.string(),
@@ -344,7 +349,7 @@ export const updateLiskUserData = mutation({
 // Create user with stablecoin integration
 export const createUserWithStablecoinIntegration = mutation({
     args: {
-        celoAddress: v.optional(v.string()),
+        arcAddress: v.optional(v.string()),
         clerkUserId: v.string(),
         email: v.string(),
         role: v.optional(v.union(v.literal("farmer"), v.literal("dispatcher"), v.literal("buyer"))),
@@ -404,6 +409,7 @@ export const createUserWithStablecoinIntegration = mutation({
             console.log('Creating new profile with stablecoin data');
             const insertData = {
                 ...args,
+                preferredPaymentMethod: "usdc" as const,
                 isVerified: false,
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
@@ -420,7 +426,7 @@ export const createUserWithStablecoinIntegration = mutation({
 // Get user by Lisk ID
 export const getUserByLiskId = query({
     args: {
-        celoAddress: v.optional(v.string()), liskId: v.string() },
+        arcAddress: v.optional(v.string()), liskId: v.string() },
     handler: async (ctx, args) => {
         return await ctx.db
             .query("userProfiles")
@@ -432,7 +438,7 @@ export const getUserByLiskId = query({
 // Debug query to get user profile with all fields
 export const getUserProfileDebug = query({
     args: {
-        celoAddress: v.optional(v.string()), clerkUserId: v.string() },
+        arcAddress: v.optional(v.string()), clerkUserId: v.string() },
     handler: async (ctx, args) => {
         const profile = await ctx.db
             .query("userProfiles")
@@ -522,7 +528,7 @@ export class DispatcherAssignmentService {
 // Get dispatcher workload for assignment
 export const getDispatcherWorkload = query({
     args: {
-        celoAddress: v.optional(v.string()), dispatcherIds: v.array(v.string()) },
+        arcAddress: v.optional(v.string()), dispatcherIds: v.array(v.string()) },
     handler: async (ctx, args): Promise<DispatcherWorkload[]> => {
         const workloads: DispatcherWorkload[] = [];
 
@@ -554,7 +560,7 @@ export const getDispatcherWorkload = query({
 // Auto-assign dispatcher to order
 export const autoAssignDispatcher = mutation({
     args: {
-        celoAddress: v.optional(v.string()),
+        arcAddress: v.optional(v.string()),
         deliveryAddress: v.string(),
         deliveryCoordinates: v.optional(v.object({
             lat: v.number(),
@@ -601,9 +607,9 @@ export const autoAssignDispatcher = mutation({
 // Update user's preferred payment method
 export const updatePreferredPaymentMethod = mutation({
     args: {
-        celoAddress: v.optional(v.string()),
+        arcAddress: v.optional(v.string()),
         clerkUserId: v.string(),
-        preferredPaymentMethod: v.union(v.literal("lisk_zar"), v.literal("celo"), v.literal("cash")),
+        preferredPaymentMethod: v.union(v.literal("usdc"), v.literal("cash")),
     },
     handler: async (ctx, args) => {
         const existingProfile = await ctx.db
@@ -627,7 +633,7 @@ export const updatePreferredPaymentMethod = mutation({
 // Update wallet connection data
 export const updateWalletData = mutation({
     args: {
-        celoAddress: v.optional(v.string()),
+        arcAddress: v.optional(v.string()),
         clerkUserId: v.string(),
         walletAddress: v.optional(v.string()),
         walletConnectedAt: v.optional(v.number()),
@@ -656,8 +662,8 @@ export const updateWalletData = mutation({
         if (args.walletProvider !== undefined) {
             updateData.walletProvider = args.walletProvider;
         }
-        if (args.celoAddress !== undefined) {
-            updateData.celoAddress = args.celoAddress;
+        if (args.arcAddress !== undefined) {
+            updateData.arcAddress = args.arcAddress;
         }
 
         await ctx.db.patch(existingProfile._id, updateData);

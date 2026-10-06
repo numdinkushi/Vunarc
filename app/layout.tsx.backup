@@ -10,7 +10,7 @@ import { Toaster } from '@/components/ui/sonner';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Vunalet - Harvesting the Future',
+  title: 'Vunarc - Harvesting the Future',
   description: 'Connect directly with local farmers and access the freshest produce while supporting sustainable agriculture in South Africa',
   manifest: '/manifest.json',
   themeColor: '#22c55e',
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Vunalet',
+    title: 'Vunarc',
   },
   formatDetection: {
     telephone: false,
@@ -59,7 +59,7 @@ export default function RootLayout({
               <meta name="theme-color" content="#22c55e" />
               <meta name="apple-mobile-web-app-capable" content="yes" />
               <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-              <meta name="apple-mobile-web-app-title" content="Vunalet" />
+              <meta name="apple-mobile-web-app-title" content="Vunarc" />
               <link rel="apple-touch-icon" href="/assets/logo/logo-192x192.png" />
               <script
                 dangerouslySetInnerHTML={{

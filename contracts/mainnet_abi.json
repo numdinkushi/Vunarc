@@ -339,7 +339,7 @@
             "type": "bool"
           }
         ],
-        "internalType": "struct VunaletPayments.Payment",
+        "internalType": "struct VunarcPayments.Payment",
         "name": "",
         "type": "tuple"
       }

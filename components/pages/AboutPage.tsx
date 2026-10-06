@@ -47,7 +47,7 @@ export function AboutPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
                 >
-                    <h1 className="text-5xl font-bold text-primary mb-6">About Vunalet</h1>
+                    <h1 className="text-5xl font-bold text-primary mb-6">About Vunarc</h1>
                     <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
                         We&apos;re revolutionizing the agricultural marketplace by connecting farmers directly
                         with consumers, ensuring fresh produce reaches your table while supporting

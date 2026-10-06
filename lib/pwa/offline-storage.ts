@@ -11,7 +11,7 @@ interface OrderData {
     }>;
     totalAmount: number;
     deliveryAddress: string;
-    paymentMethod: 'lisk_zar' | 'cash';
+    paymentMethod: 'usdc' | 'cash';
     orderStatus: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'in_transit' | 'arrived' | 'delivered' | 'cancelled';
     createdAt: number;
 }
@@ -47,7 +47,7 @@ interface OfflineData {
 }
 
 class OfflineStorageService {
-    private dbName = 'VunaletOfflineDB';
+    private dbName = 'VunarcOfflineDB';
     private dbVersion = 1;
     private db: IDBDatabase | null = null;
 

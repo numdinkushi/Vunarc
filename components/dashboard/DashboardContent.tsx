@@ -1,12 +1,12 @@
 'use client';
 
-import { useUser, SignInButton } from '@clerk/nextjs';
+import { useUser } from '@/hooks/use-user';
+import { WalletConnect } from '../web3/WalletConnect';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Dashboard } from './Dashboard';
 import { UserRegistration } from '../auth/UserRegistration';
 import { Card, CardContent } from '../ui/card';
-import { Button } from '../ui/button';
 import { Loader2 } from 'lucide-react';
 import { useMounted } from '@/hooks/use-mounted';
 
@@ -35,19 +35,19 @@ export function DashboardContent() {
         );
     }
 
-    // If user is not authenticated, show sign-in
+    // If user is not authenticated, show wallet connect
     if (!user) {
         return (
             <div className="flex items-center justify-center min-h-[calc(100vh-5rem)] bg-gradient-to-br from-green-50 to-blue-50">
                 <Card className="w-full max-w-md">
                     <CardContent className="p-6 text-center">
-                        <h2 className="text-2xl font-bold mb-4">Welcome to Vunalet</h2>
+                        <h2 className="text-2xl font-bold mb-4">Welcome to Vunarc</h2>
                         <p className="text-gray-600 mb-6">
-                            Sign in to access your personalized dashboard and manage your account.
+                            Connect a wallet that supports Arc and USDC to access your dashboard.
                         </p>
-                        <SignInButton mode="modal">
-                            <Button className="w-full">Sign In</Button>
-                        </SignInButton>
+                        <div className="flex justify-center">
+                            <WalletConnect size="default" variant="default" />
+                        </div>
                     </CardContent>
                 </Card>
             </div>

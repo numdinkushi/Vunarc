@@ -4,11 +4,12 @@ import { motion } from 'framer-motion';
 import { Star, Heart, MapPin, ShoppingCart, Clock, Thermometer, Snowflake, Package } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/hooks/use-user';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { VideoBackground } from '../../ui/VideoBackground';
 import { getExpiryStatus, getDaysUntilExpiry } from '../../../lib/utils/product-utils';
+import { getFarmerDisplayName } from '@/lib/utils/farmer-name';
 
 interface ProductCardProps {
     product: {
@@ -30,6 +31,8 @@ interface ProductCardProps {
     farmers?: Array<{
         clerkUserId: string;
         firstName: string;
+        lastName?: string;
+        businessName?: string;
     }>;
     showVideoBackground?: boolean;
 }
@@ -47,7 +50,8 @@ export function ProductCard({
         clerkUserId: user?.id || '',
     });
 
-    const farmerName = farmers?.find(f => f.clerkUserId === product.farmerId)?.firstName || 'Unknown Farmer';
+    const farmer = farmers?.find(f => f.clerkUserId === product.farmerId);
+    const farmerName = getFarmerDisplayName(farmer);
     const isBuyer = userProfile?.role === 'buyer';
     const hasNoRole = !userProfile?.role;
     const isSignedInButNoProfile = user && userProfile === null;
@@ -204,7 +208,7 @@ export function ProductCard({
 
                 <div className="flex justify-between items-center mb-6">
                     <div className={`text-2xl font-bold ${showVideoBackground ? 'text-green-300' : 'text-green-600'}`}>
-                        R{product.price}
+                        {product.price.toFixed(2)} USDC
                         <span className={`text-sm ${showVideoBackground ? 'text-gray-300' : 'text-gray-500'} font-normal`}>/{product.unit}</span>
                     </div>
                     <div className={`text-sm ${showVideoBackground ? 'text-gray-300' : 'text-gray-500'}`}>

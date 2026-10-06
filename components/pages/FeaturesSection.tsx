@@ -3,8 +3,8 @@
 import { motion } from 'framer-motion';
 import { Shield, Truck, Leaf, Zap } from 'lucide-react';
 import Image from 'next/image';
-import { VideoBackground } from '../../components/ui/VideoBackground';
-import { useUser } from '@clerk/nextjs';
+import { VideoBackground } from '../ui/VideoBackground';
+import { useUser } from '@/hooks/use-user';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import Link from 'next/link';
@@ -102,7 +102,7 @@ export function FeaturesSection() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.8 }}
                 >
-                    <h2 className="text-5xl font-bold text-gray-900 mb-6">Why Choose Vunalet?</h2>
+                    <h2 className="text-5xl font-bold text-gray-900 mb-6">Why Choose Vunarc?</h2>
                     <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
                         Experience the future of farm-to-consumer commerce with our innovative platform designed for South Africa
                     </p>

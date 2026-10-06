@@ -1,6 +1,6 @@
 # Image Upload Setup Guide
 
-This guide explains how to set up Cloudinary image upload functionality for the Vunalet application.
+This guide explains how to set up Cloudinary image upload functionality for the Vunarc application.
 
 ## Environment Variables Required
 
@@ -52,14 +52,14 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 6. Submit the form to save product with images
 
 ### Image Storage
-- Images are uploaded to Cloudinary in the `vunalet/products` folder
+- Images are uploaded to Cloudinary in the `vunarc/products` folder
 - URLs are stored in the Convex `products` table
 - Images are automatically optimized for web display
 
 ## File Structure
 
 ```
-vunalet/
+vunarc/
 ├── lib/
 │   └── cloudinary.ts          # Cloudinary configuration and helpers
 ├── pages/api/

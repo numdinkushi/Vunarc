@@ -1,6 +1,6 @@
 # Balance Loading and Refresh Implementation
 
-This document outlines the beautiful loading animations and cute refresh button functionality that has been implemented across the Vunalet dashboard for balance fetching.
+This document outlines the beautiful loading animations and cute refresh button functionality that has been implemented across the Vunarc dashboard for balance fetching.
 
 ## 🎨 Features Implemented
 
@@ -20,7 +20,7 @@ This document outlines the beautiful loading animations and cute refresh button 
 - **Centralized Logic**: All balance-related functionality in one hook
 - **Loading States**: Proper loading state management
 - **Error Handling**: Graceful error handling for failed requests
-- **Auto-refresh**: Automatic balance updates from Lisk blockchain
+- **Refresh**: USDC balance is read from the connected wallet on Arc
 
 ## 🛠 Components Updated
 
@@ -138,8 +138,8 @@ export function Dashboard() {
 
 1. User clicks refresh button
 2. Button shows loading state (rotating icon)
-3. Balance data is fetched from Lisk blockchain
-4. Database is updated with new balance
+3. The USDC balance is read from the connected wallet on Arc
+4. The wallet card updates with the new balance
 5. UI updates with new values
 6. Button returns to normal state
 

@@ -1,5 +1,5 @@
 /**
- * Payment-related constants for Vunalet
+ * Payment-related constants for Vunarc
  */
 
 export const PAYMENT_CONSTANTS = {

@@ -4,17 +4,15 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Coins, Wallet, ArrowLeft, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Wallet, Banknote, ArrowLeft, CheckCircle, AlertTriangle } from 'lucide-react';
 import {
     PaymentMethod,
     PAYMENT_METHOD_LABELS,
     PAYMENT_METHOD_DESCRIPTIONS,
-    convertZarToCelo,
     calculatePlatformFee,
-    Currency
+    formatUsdc,
 } from '@/constants';
 import { useWalletBalance } from '@/hooks/use-wallet-balance';
-import { useWalletProfile } from '@/hooks/use-wallet-profile';
 import { WalletConnect } from '@/components/web3/WalletConnect';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
@@ -40,54 +38,29 @@ export function PaymentMethodSelector({
     onPaymentSuccess,
     onPaymentError
 }: PaymentMethodSelectorProps) {
-    const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+    const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>(PaymentMethod.USDC);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // Get wallet balance and profile data
-    const {
-        isWalletConnected,
-        walletAddress
-    } = useWalletBalance();
-
-    // const { farmerProfile, dispatcherProfile } = useWalletProfile();
-
-    // Mutation to update payment method
+    const { isWalletConnected, walletAddress, isOnArc } = useWalletBalance();
     const updatePaymentMethod = useMutation(api.orders.updatePaymentMethod);
 
-    // Convert ZAR to CELO for display
-    const baseCeloAmount = convertZarToCelo(zarAmount);
-    const platformFeeCelo = calculatePlatformFee(baseCeloAmount);
-    const celoAmount = baseCeloAmount + platformFeeCelo;
-    const farmerCeloAmount = convertZarToCelo(farmerZarAmount);
-    const dispatcherCeloAmount = convertZarToCelo(dispatcherZarAmount);
-
-    const handleMethodSelect = (method: PaymentMethod) => {
-        setSelectedMethod(method);
-    };
+    const platformFee = calculatePlatformFee(farmerZarAmount + dispatcherZarAmount);
+    const totalUsdc = farmerZarAmount + dispatcherZarAmount + platformFee;
 
     const handleConfirmSelection = async () => {
-        if (!selectedMethod) {
-            toast.error('Please select a payment method');
-            return;
-        }
-
-        // For CELO payments, check if wallet is connected
-        if (selectedMethod === PaymentMethod.CELO && !isWalletConnected) {
-            toast.error('Please connect your wallet to use CELO payments');
+        if (selectedMethod === PaymentMethod.USDC && (!isWalletConnected || !isOnArc)) {
+            toast.error('Connect a wallet on Arc to pay with USDC');
             return;
         }
 
         setIsProcessing(true);
         try {
-            // Update the order with the selected payment method
             await updatePaymentMethod({
                 orderId: orderId as Id<"orders">,
                 paymentMethod: selectedMethod,
             });
 
-            toast.success(`Payment method set to ${PAYMENT_METHOD_LABELS[selectedMethod]}! Order is being processed.`);
-
-            // Call success callback (this will redirect to dashboard)
+            toast.success(`Payment method set to ${PAYMENT_METHOD_LABELS[selectedMethod]}.`);
             onPaymentSuccess('method-selected', selectedMethod);
         } catch (error) {
             console.error('Failed to update payment method:', error);
@@ -98,79 +71,16 @@ export function PaymentMethodSelector({
         }
     };
 
-    const handleBack = () => {
-        onPaymentError('cancelled');
-    };
-
     return (
         <div className="space-y-6">
-            {/* Header */}
             <div className="text-center">
-                <h2 className="text-2xl font-bold text-white mb-2">Select Payment Method</h2>
-                <p className="text-gray-300">Choose how you&apos;d like to pay for your order</p>
+                <h2 className="text-2xl font-bold text-white mb-2">Pay with USDC</h2>
+                <p className="text-gray-300">USDC on Arc is the default. Cash is available at delivery.</p>
             </div>
 
-            {/* Payment Method Cards */}
             <div className="grid grid-cols-1 gap-4">
-                {/* Lisk ZAR Payment Card */}
-                <Card className="bg-black/40 backdrop-blur-sm border border-gray-600 hover:border-green-500 transition-colors cursor-pointer">
-                    <CardHeader
-                        className="pb-3 cursor-pointer"
-                        onClick={() => handleMethodSelect(PaymentMethod.LISK_ZAR)}
-                    >
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                                <div className="p-2 bg-green-500/20 rounded-lg">
-                                    <Coins className="h-6 w-6 text-green-400" />
-                                </div>
-                                <div>
-                                    <CardTitle className="text-white text-lg">
-                                        {PAYMENT_METHOD_LABELS[PaymentMethod.LISK_ZAR]}
-                                    </CardTitle>
-                                    <p className="text-gray-400 text-sm">
-                                        {PAYMENT_METHOD_DESCRIPTIONS[PaymentMethod.LISK_ZAR]}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value="lisk_zar"
-                                    checked={selectedMethod === PaymentMethod.LISK_ZAR}
-                                    onChange={() => handleMethodSelect(PaymentMethod.LISK_ZAR)}
-                                    className="text-green-500"
-                                />
-                                <Badge variant="outline" className="text-green-400 border-green-400">
-                                    {Currency.ZAR} {zarAmount.toFixed(2)}
-                                </Badge>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                        <div className="space-y-2 text-sm text-gray-300">
-                            <div className="flex justify-between">
-                                <span>Farmer Payment:</span>
-                                <span className="text-green-400">{Currency.ZAR} {farmerZarAmount.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Dispatcher Payment:</span>
-                                <span className="text-green-400">{Currency.ZAR} {dispatcherZarAmount.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between font-semibold border-t border-gray-600 pt-2">
-                                <span>Total:</span>
-                                <span className="text-green-400">{Currency.ZAR} {zarAmount.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* CELO Payment Card */}
-                <Card className="bg-black/40 backdrop-blur-sm border border-gray-600 hover:border-blue-500 transition-colors cursor-pointer">
-                    <CardHeader
-                        className="pb-3 cursor-pointer"
-                        onClick={() => handleMethodSelect(PaymentMethod.CELO)}
-                    >
+                <Card className={`bg-black/40 backdrop-blur-sm border transition-colors cursor-pointer ${selectedMethod === PaymentMethod.USDC ? 'border-blue-500' : 'border-gray-600'}`}>
+                    <CardHeader className="pb-3 cursor-pointer" onClick={() => setSelectedMethod(PaymentMethod.USDC)}>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                                 <div className="p-2 bg-blue-500/20 rounded-lg">
@@ -178,68 +88,82 @@ export function PaymentMethodSelector({
                                 </div>
                                 <div>
                                     <CardTitle className="text-white text-lg">
-                                        {PAYMENT_METHOD_LABELS[PaymentMethod.CELO]}
+                                        {PAYMENT_METHOD_LABELS[PaymentMethod.USDC]}
                                     </CardTitle>
                                     <p className="text-gray-400 text-sm">
-                                        {PAYMENT_METHOD_DESCRIPTIONS[PaymentMethod.CELO]}
+                                        {PAYMENT_METHOD_DESCRIPTIONS[PaymentMethod.USDC]}
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value="celo"
-                                    checked={selectedMethod === PaymentMethod.CELO}
-                                    onChange={() => handleMethodSelect(PaymentMethod.CELO)}
-                                    className="text-blue-500"
-                                />
-                                <Badge variant="outline" className="text-blue-400 border-blue-400">
-                                    {Currency.CELO} {celoAmount.toFixed(6)}
-                                </Badge>
-                            </div>
+                            <Badge variant="outline" className="text-blue-400 border-blue-400">
+                                Default
+                            </Badge>
                         </div>
                     </CardHeader>
                     <CardContent className="pt-0">
-                        {!isWalletConnected ? (
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                                    <div className="flex items-center space-x-2 text-amber-400">
-                                        <AlertTriangle className="h-4 w-4" />
-                                        <span className="text-sm">Wallet not connected</span>
-                                    </div>
-                                    <WalletConnect size="sm" variant="outline" />
+                        {!isWalletConnected || !isOnArc ? (
+                            <div className="flex items-center justify-between p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                                <div className="flex items-center space-x-2 text-amber-400">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <span className="text-sm">Connect a wallet on Arc</span>
                                 </div>
+                                <WalletConnect size="sm" variant="outline" />
                             </div>
                         ) : (
                             <div className="space-y-2 text-sm text-gray-300">
                                 <div className="flex justify-between">
-                                    <span>Farmer Payment:</span>
-                                    <span className="text-blue-400">{Currency.CELO} {farmerCeloAmount.toFixed(6)}</span>
+                                    <span>Farmer</span>
+                                    <span className="text-blue-400">{formatUsdc(farmerZarAmount)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span>Dispatcher Payment:</span>
-                                    <span className="text-blue-400">{Currency.CELO} {dispatcherCeloAmount.toFixed(6)}</span>
+                                    <span>Dispatcher</span>
+                                    <span className="text-blue-400">{formatUsdc(dispatcherZarAmount)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Platform fee</span>
+                                    <span className="text-blue-400">{formatUsdc(platformFee)}</span>
                                 </div>
                                 <div className="flex justify-between font-semibold border-t border-gray-600 pt-2">
-                                    <span>Total:</span>
-                                    <span className="text-blue-400">{Currency.CELO} {celoAmount.toFixed(6)}</span>
+                                    <span>Total</span>
+                                    <span className="text-blue-400">{formatUsdc(totalUsdc)}</span>
                                 </div>
                                 <div className="flex items-center space-x-2 text-green-400 text-xs">
                                     <CheckCircle className="h-3 w-3" />
-                                    <span>Wallet Connected: {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}</span>
+                                    <span>Wallet {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}</span>
                                 </div>
                             </div>
                         )}
                     </CardContent>
                 </Card>
+
+                <Card className={`bg-black/40 backdrop-blur-sm border transition-colors cursor-pointer ${selectedMethod === PaymentMethod.CASH ? 'border-green-500' : 'border-gray-600'}`}>
+                    <CardHeader className="pb-3 cursor-pointer" onClick={() => setSelectedMethod(PaymentMethod.CASH)}>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="p-2 bg-green-500/20 rounded-lg">
+                                    <Banknote className="h-6 w-6 text-green-400" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-white text-lg">
+                                        {PAYMENT_METHOD_LABELS[PaymentMethod.CASH]}
+                                    </CardTitle>
+                                    <p className="text-gray-400 text-sm">
+                                        {PAYMENT_METHOD_DESCRIPTIONS[PaymentMethod.CASH]}
+                                    </p>
+                                </div>
+                            </div>
+                            <Badge variant="outline" className="text-green-400 border-green-400">
+                                {formatUsdc(zarAmount)}
+                            </Badge>
+                        </div>
+                    </CardHeader>
+                </Card>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex space-x-4">
                 <Button
                     variant="outline"
-                    onClick={handleBack}
+                    onClick={() => onPaymentError('cancelled')}
                     className="flex-1 bg-transparent border-gray-600 text-white hover:bg-white/10 hover:border-white/20"
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
@@ -247,20 +171,10 @@ export function PaymentMethodSelector({
                 </Button>
                 <Button
                     onClick={handleConfirmSelection}
-                    disabled={!selectedMethod || isProcessing}
+                    disabled={isProcessing}
                     className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                 >
-                    {isProcessing ? (
-                        <>
-                            <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                            Processing...
-                        </>
-                    ) : (
-                        <>
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Confirm Selection
-                        </>
-                    )}
+                    {isProcessing ? 'Processing...' : 'Confirm'}
                 </Button>
             </div>
         </div>

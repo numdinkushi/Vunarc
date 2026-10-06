@@ -11,7 +11,7 @@ export interface DispatcherOrder {
     totalCost: number;
     orderStatus: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'in_transit' | 'arrived' | 'delivered' | 'cancelled';
     paymentStatus: 'paid' | 'pending' | 'failed';
-    paymentMethod: 'lisk_zar' | 'celo' | 'cash';
+    paymentMethod: 'usdc' | 'cash';
     createdAt: string;
     deliveryAddress: string;
     estimatedDeliveryTime?: string;

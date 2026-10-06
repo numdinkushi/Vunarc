@@ -20,7 +20,7 @@ export function RoleSelectionStep({ formData, onRoleSelect, onNext }: Registrati
                             Choose Your Role
                         </CardTitle>
                         <CardDescription className="text-lg text-gray-600">
-                            Select how you want to participate in the Vunalet community
+                            Select how you want to participate in the Vunarc community
                         </CardDescription>
                         
                 

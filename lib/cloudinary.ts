@@ -10,7 +10,7 @@ cloudinary.config({
 export default cloudinary;
 
 // Helper function to upload image
-export const uploadImage = async (file: Buffer, folder: string = 'vunalet/products'): Promise<string> => {
+export const uploadImage = async (file: Buffer, folder: string = 'vunarc/products'): Promise<string> => {
     return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
             {
@@ -40,7 +40,7 @@ export const uploadProfilePicture = async (file: Buffer): Promise<string> => {
     return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
             {
-                folder: 'vunalet/profiles',
+                folder: 'vunarc/profiles',
                 resource_type: 'image',
                 transformation: [
                     { width: 400, height: 400, crop: 'fill', gravity: 'face' },

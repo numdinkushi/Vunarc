@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/hooks/use-user';
 import { useAccount } from 'wagmi';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
@@ -33,7 +33,7 @@ export function CeloAddressDebugger() {
 
         setIsUpdating(true);
         try {
-            const isCeloNetwork = chain?.id === 42220 || chain?.id === 44787;
+            const isCeloNetwork = chain?.id === 5042;
 
             console.log('Manually updating CELO address:', {
                 userId: user.id,
@@ -45,7 +45,7 @@ export function CeloAddressDebugger() {
             await updateUserWallet({
                 clerkUserId: user.id,
                 walletAddress: address,
-                celoAddress: isCeloNetwork ? address : undefined,
+                arcAddress: isCeloNetwork ? address : undefined,
                 walletConnectedAt: Date.now(),
                 walletProvider: 'manual',
             });
@@ -70,7 +70,7 @@ export function CeloAddressDebugger() {
                     <p><strong>Wallet Address:</strong> {isMounted ? (address || 'Not connected') : 'Loading...'}</p>
                     <p><strong>Chain ID:</strong> {isMounted ? (chain?.id || 'Unknown') : 'Loading...'}</p>
                     <p><strong>Is Connected:</strong> {isMounted ? (isConnected ? 'Yes' : 'No') : 'Loading...'}</p>
-                    <p><strong>Current CELO Address:</strong> {userProfile?.celoAddress || 'Not set'}</p>
+                    <p><strong>Current CELO Address:</strong> {userProfile?.arcAddress || 'Not set'}</p>
                     <p><strong>Current Wallet Address:</strong> {userProfile?.walletAddress || 'Not set'}</p>
                 </div>
 

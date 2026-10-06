@@ -1,4 +1,4 @@
-import { LZC_TOKEN_NAME } from '../../../constants/tokens';
+import { USDC_TOKEN_NAME } from '../../../constants/tokens';
 import { toast } from 'sonner';
 
 export interface WalletBalances {
@@ -53,8 +53,8 @@ export class WalletService {
 
             const data = await res.json();
             const tokens: Array<{ name: string; balance: string | number; }> = data?.tokens || [];
-            const zarToken = tokens.find(t => t.name === LZC_TOKEN_NAME);
-            const walletBalance = zarToken ? Number(zarToken.balance) : 0;
+            const usdcToken = tokens.find(t => t.name === USDC_TOKEN_NAME);
+            const walletBalance = usdcToken ? Number(usdcToken.balance) : 0;
 
             return { walletBalance, ledgerBalance: 0 };
         } catch (error) {

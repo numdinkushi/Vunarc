@@ -2,17 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseEther } from 'viem';
+import { formatEther } from 'viem';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2, Wallet, AlertTriangle } from 'lucide-react';
 import {
-    CELO_CONTRACT_ADDRESS,
-    VUNALET_PAYMENTS_ABI,
-    CELO_NETWORKS,
-    convertZarToCelo,
-    calculatePlatformFee,
+    ARC_CONTRACT_ADDRESS,
+    VUNARC_PAYMENTS_ABI,
+    ARC_NETWORKS,
+    splitUsdcPayment,
+    formatUsdc,
     PAYMENT_SECURITY,
     DIVVI_CONFIG
 } from '@/constants';
@@ -55,21 +55,15 @@ export function CeloPayment({
     // Convex mutations for order updates
     const updateOrderStatus = useMutation(api.orders.updateOrderStatus);
     const updatePaymentStatus = useMutation(api.orders.updatePaymentStatus);
-    const updateCeloPayment = useMutation(api.orders.updateCeloPayment);
+    const updateUsdcPayment = useMutation(api.orders.updateUsdcPayment);
 
-    // Convert all amounts to CELO for consistent display and calculation
-    const orderTotalCelo = convertZarToCelo(zarAmount);
-    const farmerCeloAmount = convertZarToCelo(farmerZarAmount);
-    const dispatcherCeloAmount = convertZarToCelo(dispatcherZarAmount);
+    const split = splitUsdcPayment(farmerZarAmount, dispatcherZarAmount);
+    const farmerUsdc = farmerZarAmount;
+    const dispatcherUsdc = dispatcherZarAmount;
+    const platformUsdc = Number(formatEther(split.platformWei));
+    const totalUsdc = Number(formatEther(split.totalWei));
 
-    // Calculate platform fee on the sum of farmer + dispatcher amounts (the actual payment amounts)
-    const subtotalCeloAmount = farmerCeloAmount + dispatcherCeloAmount;
-    const platformFeeCelo = calculatePlatformFee(subtotalCeloAmount);
-
-    // Total amount is farmer + dispatcher + platform fee
-    const totalCeloAmount = subtotalCeloAmount + platformFeeCelo;
-
-    const isCorrectChain = chain?.id === CELO_NETWORKS.MAINNET.chainId || chain?.id === CELO_NETWORKS.ALFAJORES.chainId;
+    const isCorrectChain = chain?.id === ARC_NETWORKS.MAINNET.chainId;
 
     // Helper function to handle different types of errors
     const handleTransactionError = (error: unknown, context: string = 'Transaction') => {
@@ -126,14 +120,7 @@ export function CeloPayment({
 
     const handlePayment = async () => {
         console.log('🚀 Starting CELO payment process...');
-        console.log('💰 Payment breakdown:', {
-            orderTotalCelo,
-            farmerAmount: farmerCeloAmount,
-            dispatcherAmount: dispatcherCeloAmount,
-            subtotal: subtotalCeloAmount,
-            platformFee: platformFeeCelo,
-            totalAmount: totalCeloAmount
-        });
+        console.log('USDC payment breakdown:', split);
 
         if (!isConnected || !address) {
             onPaymentError('Please connect your wallet first');
@@ -141,11 +128,11 @@ export function CeloPayment({
         }
 
         if (!isCorrectChain) {
-            onPaymentError('Please switch to Celo network');
+            onPaymentError('Please switch to Arc');
             return;
         }
 
-        if (!CELO_CONTRACT_ADDRESS) {
+        if (!ARC_CONTRACT_ADDRESS) {
             onPaymentError('Contract address not configured');
             return;
         }
@@ -154,19 +141,19 @@ export function CeloPayment({
 
         try {
             await writeContract({
-                address: CELO_CONTRACT_ADDRESS,
-                abi: VUNALET_PAYMENTS_ABI,
+                address: ARC_CONTRACT_ADDRESS,
+                abi: VUNARC_PAYMENTS_ABI,
                 functionName: 'processOrderPayment',
                 args: [
                     orderId,
                     farmerAddress as `0x${string}`,
                     (dispatcherAddress || '0x0000000000000000000000000000000000000000') as `0x${string}`,
-                    parseEther(farmerCeloAmount.toString()),
-                    parseEther(dispatcherCeloAmount.toString()),
-                    parseEther(platformFeeCelo.toString()),
+                    split.farmerWei,
+                    split.dispatcherWei,
+                    split.platformWei,
                     PAYMENT_SECURITY.SECRET
                 ],
-                value: parseEther(totalCeloAmount.toString()), // Send total amount including platform fee
+                value: split.totalWei,
             });
 
             console.log('✅ Transaction submitted to blockchain');
@@ -184,11 +171,11 @@ export function CeloPayment({
             const updateOrderData = async () => {
                 try {
                     // Update order with CELO payment details
-                    await updateCeloPayment({
+                    await updateUsdcPayment({
                         orderId: orderId as Id<"orders">,
-                        celoTxHash: hash,
-                        celoFromAddress: address!,
-                        celoAmountPaid: totalCeloAmount,
+                        usdcTxHash: hash,
+                        usdcFromAddress: address!,
+                        usdcAmountPaid: totalUsdc,
                     });
 
                     // Update order status to delivered and payment status to paid
@@ -215,7 +202,7 @@ export function CeloPayment({
                     if (DIVVI_CONFIG.consumer !== "0x0000000000000000000000000000000000000000") {
                         submitReferral({
                             txHash: hash,
-                            chainId: chain?.id || CELO_NETWORKS.MAINNET.chainId,
+                            chainId: chain?.id || ARC_NETWORKS.MAINNET.chainId,
                         }).catch((error) => {
                             console.log('Divvi referral submission failed:', error);
                             // Don't show error to user as this is not critical
@@ -230,7 +217,7 @@ export function CeloPayment({
 
             updateOrderData();
         }
-    }, [isConfirmed, hash, onPaymentSuccess, chain?.id, orderId, address, totalCeloAmount, updateCeloPayment, updateOrderStatus, updatePaymentStatus]);
+    }, [isConfirmed, hash, onPaymentSuccess, chain?.id, orderId, address, totalUsdc, updateUsdcPayment, updateOrderStatus, updatePaymentStatus]);
 
     // Handle transaction error from useWriteContract hook
     useEffect(() => {
@@ -250,7 +237,7 @@ export function CeloPayment({
                 </CardHeader>
                 <CardContent>
                     <p className="text-sm text-gray-600 mb-4">
-                        Connect your wallet to pay with CELO
+                        Connect your wallet to pay with USDC on Arc
                     </p>
                     <WalletConnect />
                 </CardContent>
@@ -269,7 +256,7 @@ export function CeloPayment({
                 </CardHeader>
                 <CardContent>
                     <p className="text-sm text-gray-600 mb-4">
-                        Please switch to Celo network to continue
+                        Switch to Arc to pay with USDC
                     </p>
                     <WalletConnect />
                 </CardContent>
@@ -282,33 +269,33 @@ export function CeloPayment({
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Wallet className="h-5 w-5" />
-                    Pay with CELO
+                    Pay with USDC
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                         <span>Order Total:</span>
-                        <span className="font-medium">{orderTotalCelo.toFixed(6)} CELO</span>
+                        <span className="font-medium">{formatUsdc(zarAmount)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                         <span>Farmer Amount:</span>
-                        <span>{farmerCeloAmount.toFixed(6)} CELO</span>
+                        <span>{formatUsdc(farmerUsdc)}</span>
                     </div>
-                    {dispatcherCeloAmount > 0 && (
+                    {dispatcherUsdc > 0 && (
                         <div className="flex justify-between text-sm">
                             <span>Dispatcher Amount:</span>
-                            <span>{dispatcherCeloAmount.toFixed(6)} CELO</span>
+                            <span>{formatUsdc(dispatcherUsdc)}</span>
                         </div>
                     )}
                     <div className="flex justify-between text-sm">
                         <span>Platform Fee (2.5%):</span>
-                        <span>{platformFeeCelo.toFixed(6)} CELO</span>
+                        <span>{formatUsdc(platformUsdc)}</span>
                     </div>
                     <div className="border-t pt-2">
                         <div className="flex justify-between font-medium">
-                            <span>Total CELO:</span>
-                            <span>{totalCeloAmount.toFixed(6)} CELO</span>
+                            <span>Total USDC:</span>
+                            <span>{formatUsdc(totalUsdc)}</span>
                         </div>
                     </div>
                 </div>
@@ -324,12 +311,12 @@ export function CeloPayment({
                             {isPending ? 'Confirming...' : isConfirming ? 'Processing...' : 'Preparing...'}
                         </>
                     ) : (
-                        `Pay ${totalCeloAmount.toFixed(6)} CELO`
+                        `Pay ${formatUsdc(totalUsdc)}`
                     )}
                 </Button>
 
                 <div className="text-xs text-gray-500 text-center">
-                    Transaction will be processed on Celo blockchain
+                    Settles in USDC on Arc. Gas is USDC.
                 </div>
             </CardContent>
         </Card>

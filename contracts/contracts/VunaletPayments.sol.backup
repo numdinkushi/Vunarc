@@ -6,11 +6,11 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
- * @title VunaletPayments
- * @dev Smart contract for processing payments on the Vunalet platform
+ * @title VunarcPayments
+ * @dev Smart contract for processing payments on the Vunarc platform
  * @notice This contract handles order payments and distributes funds to farmers and dispatchers
  */
-contract VunaletPayments is Ownable, ReentrancyGuard, Pausable {
+contract VunarcPayments is Ownable, ReentrancyGuard, Pausable {
     // Payment structure
     struct Payment {
         address buyer;

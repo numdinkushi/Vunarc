@@ -1,9 +1,13 @@
+'use client';
+
 import { useBalanceDisplay } from '../../../hooks/use-balance-display';
 import { useWalletBalance } from '../../../hooks/use-wallet-balance';
 import { BalanceLoading } from '../../ui/balance-loading';
 import { WalletConnect } from '../../web3/WalletConnect';
+import { Badge } from '../../ui/badge';
 import { motion } from 'framer-motion';
 import { RefreshCw, Wallet } from 'lucide-react';
+import { CopyAddress } from '../../ui/copy-address';
 
 interface WalletCardProps {
     className?: string;
@@ -11,27 +15,34 @@ interface WalletCardProps {
 
 export function WalletCard({ className = '' }: WalletCardProps) {
     const {
-        walletBalance,
+        walletBalanceFormatted,
         ledgerBalance,
         getBalanceColor,
         getBalanceIcon,
         formatLedgerBalance,
+        formatUsdc,
         userRole,
         isLoading,
         isRefreshing,
-        refreshBalance
+        refreshBalance,
+        isWalletConnected,
+        isOnArc,
+        walletAddress,
+        walletBalance,
     } = useBalanceDisplay();
 
-    const {
-        isWalletConnected,
-        walletAddress    } = useWalletBalance();
+    const { refreshBalances } = useWalletBalance();
+
+    const handleRefresh = async () => {
+        await Promise.all([refreshBalance(), refreshBalances()]);
+    };
 
     if (isLoading) {
         return (
             <BalanceLoading
                 className={className}
                 showRefreshButton={true}
-                onRefresh={refreshBalance}
+                onRefresh={handleRefresh}
                 isRefreshing={isRefreshing}
             />
         );
@@ -45,25 +56,29 @@ export function WalletCard({ className = '' }: WalletCardProps) {
             transition={{ duration: 0.5 }}
         >
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Wallet Overview</h3>
                 <div className="flex items-center gap-2">
-                    {!isWalletConnected && (
-                        <WalletConnect size="sm" variant="outline" />
-                    )}
+                    <h3 className="text-lg font-semibold">Wallet Overview</h3>
+                    {isOnArc ? (
+                        <Badge className="bg-green-600 text-white text-xs">Arc</Badge>
+                    ) : null}
+                </div>
+                <div className="flex items-center gap-2">
+                    {!isWalletConnected && <WalletConnect size="sm" variant="outline" />}
                     <motion.button
-                        onClick={refreshBalance}
+                        onClick={handleRefresh}
                         disabled={isRefreshing}
-                        className={`p-2 rounded-full transition-all duration-300 ${isRefreshing
-                            ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
-                            }`}
+                        className={`p-2 rounded-full transition-all duration-300 ${
+                            isRefreshing
+                                ? 'text-gray-400 cursor-not-allowed'
+                                : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                        }`}
                         whileHover={!isRefreshing ? { scale: 1.1 } : {}}
                         whileTap={!isRefreshing ? { scale: 0.9 } : {}}
                         title="Refresh balance"
                     >
                         <motion.div
                             animate={isRefreshing ? { rotate: 360 } : {}}
-                            transition={isRefreshing ? { duration: 1, repeat: Infinity, ease: "linear" } : {}}
+                            transition={isRefreshing ? { duration: 1, repeat: Infinity, ease: 'linear' } : {}}
                         >
                             <RefreshCw size={16} />
                         </motion.div>
@@ -71,7 +86,6 @@ export function WalletCard({ className = '' }: WalletCardProps) {
                 </div>
             </div>
 
-            {/* Wallet Connection Status */}
             {isWalletConnected && walletAddress ? (
                 <motion.div
                     className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg"
@@ -83,9 +97,7 @@ export function WalletCard({ className = '' }: WalletCardProps) {
                         <Wallet className="h-4 w-4" />
                         <span className="text-sm font-medium">Wallet Connected</span>
                     </div>
-                    <div className="text-xs text-green-600 mt-1">
-                        {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-                    </div>
+                    <CopyAddress address={walletAddress} />
                 </motion.div>
             ) : (
                 <motion.div
@@ -94,10 +106,10 @@ export function WalletCard({ className = '' }: WalletCardProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                 >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 text-amber-700">
                             <Wallet className="h-4 w-4" />
-                            <span className="text-sm font-medium">Connect Wallet for CELO Payments</span>
+                            <span className="text-sm font-medium">Connect a wallet to see USDC on Arc</span>
                         </div>
                         <WalletConnect size="sm" variant="outline" />
                     </div>
@@ -106,19 +118,26 @@ export function WalletCard({ className = '' }: WalletCardProps) {
 
             <div className="space-y-4">
                 <motion.div
-                    className="flex justify-between items-center"
+                    className="flex justify-between items-start"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <span className="flex items-center text-gray-600">
-                        <span className="mr-2">{getBalanceIcon('wallet', walletBalance)}</span>
-                        Available Balance:
+                    <span className="flex flex-col text-gray-600">
+                        <span className="flex items-center">
+                            <span className="mr-2">{getBalanceIcon('wallet', walletBalance)}</span>
+                            USDC Balance
+                        </span>
+                        {/* Arc docs: native USDC and ERC-20 USDC are one balance — show a single row. */}
+                        <span className="text-xs text-muted-foreground ml-6">
+                            Native USDC on Arc (also pays gas)
+                        </span>
                     </span>
                     <span className={`font-bold text-lg ${getBalanceColor('wallet', walletBalance)}`}>
-                        R{walletBalance.toFixed(2)}
+                        {formatUsdc(Number(walletBalanceFormatted))}
                     </span>
                 </motion.div>
+
                 <motion.div
                     className="flex justify-between items-center"
                     initial={{ opacity: 0, x: -20 }}
@@ -127,7 +146,7 @@ export function WalletCard({ className = '' }: WalletCardProps) {
                 >
                     <span className="flex items-center text-gray-600">
                         <span className="mr-2">{getBalanceIcon('ledger', ledgerBalance, userRole)}</span>
-                        {userRole === 'buyer' ? 'Pending Payment:' : 'Pending Earnings:'}
+                        {userRole === 'buyer' ? 'Pending Payment' : 'Pending Earnings'}
                     </span>
                     <span className={`font-bold text-lg ${getBalanceColor('ledger', ledgerBalance, userRole)}`}>
                         {formatLedgerBalance(ledgerBalance, userRole)}
@@ -136,4 +155,4 @@ export function WalletCard({ className = '' }: WalletCardProps) {
             </div>
         </motion.div>
     );
-} 
+}

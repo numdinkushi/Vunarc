@@ -5,18 +5,8 @@ import { Star, Heart, MapPin, Truck, Calculator, User, Clock, Thermometer, Snowf
 import { ProductCarousel } from '../../carousel/ProductCarousel';
 import { PurchaseFormData } from '../../../app/types';
 import { getExpiryStatus, getDaysUntilExpiry } from '../../../lib/utils/product-utils';
-// Constants for CELO conversion
-const ZAR_TO_CELO = 0.003;
-const PLATFORM_FEE_RATE = 2.5;
-
-// Helper functions
-const convertZarToCelo = (zarAmount: number): number => {
-    return Number((zarAmount * ZAR_TO_CELO).toFixed(6));
-};
-
-const calculatePlatformFee = (amount: number): number => {
-    return Number((amount * PLATFORM_FEE_RATE / 100).toFixed(6));
-};
+import { calculatePlatformFee, formatUsdc } from '@/constants';
+import { getFarmerDisplayName } from '@/lib/utils/farmer-name';
 
 interface ProductDetailCardProps {
     product: {
@@ -133,7 +123,7 @@ export function ProductDetailCard({
 
                 <div className="space-y-3">
                     <p className="text-gray-300">
-                        By {farmer ? (farmer.businessName || `${farmer.firstName} ${farmer.lastName}`) : product.farmerId}
+                        By {getFarmerDisplayName(farmer, product.farmerId)}
                     </p>
 
                     <div className="flex items-center text-gray-300">
@@ -165,7 +155,7 @@ export function ProductDetailCard({
 
                     <div className="flex justify-between items-center">
                         <div className="text-3xl font-bold text-green-300">
-                            R{product.price}
+                            {formatUsdc(product.price)}
                             <span className="text-lg text-gray-300 font-normal">/{product.unit}</span>
                         </div>
                         <div className="text-gray-300">
@@ -283,39 +273,29 @@ export function ProductDetailCard({
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-300">Delivery Cost:</span>
-                                        <span className="text-white">
-                                            {formData.paymentMethod === 'celo'
-                                                ? `${convertZarToCelo(formData.deliveryCost).toFixed(6)} CELO`
-                                                : `R${formData.deliveryCost.toFixed(2)}`
-                                            }
-                                        </span>
+                                        <span className="text-white">{formatUsdc(formData.deliveryCost)}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-300">Product Cost:</span>
-                                        <span className="text-white">
-                                            {formData.paymentMethod === 'celo'
-                                                ? `${convertZarToCelo(product.price * formData.quantity).toFixed(6)} CELO`
-                                                : `R${(product.price * formData.quantity).toFixed(2)}`
-                                            }
-                                        </span>
+                                        <span className="text-white">{formatUsdc(product.price * formData.quantity)}</span>
                                     </div>
-                                    {formData.paymentMethod === 'celo' && (
+                                    {formData.paymentMethod === 'usdc' && (
                                         <div className="flex justify-between">
                                             <span className="text-gray-300">Platform Fee (2.5%):</span>
                                             <span className="text-white">
-                                                {calculatePlatformFee(convertZarToCelo(formData.totalCost)).toFixed(6)} CELO
+                                                {formatUsdc(calculatePlatformFee(formData.totalCost))}
                                             </span>
                                         </div>
                                     )}
                                     <div className="border-t border-gray-600 pt-2">
                                         <div className="flex justify-between text-lg font-bold">
                                             <span className="text-green-300">
-                                                {formData.paymentMethod === 'celo' ? 'Total Cost (incl. fees):' : 'Total Cost:'}
+                                                {formData.paymentMethod === 'usdc' ? 'Total (incl. fee):' : 'Total Cost:'}
                                             </span>
                                             <span className="text-green-300">
-                                                {formData.paymentMethod === 'celo'
-                                                    ? `${(convertZarToCelo(formData.totalCost) + calculatePlatformFee(convertZarToCelo(formData.totalCost))).toFixed(6)} CELO`
-                                                    : `R${formData.totalCost.toFixed(2)}`
+                                                {formData.paymentMethod === 'usdc'
+                                                    ? formatUsdc(formData.totalCost + calculatePlatformFee(formData.totalCost))
+                                                    : formatUsdc(formData.totalCost)
                                                 }
                                             </span>
                                         </div>
@@ -331,33 +311,30 @@ export function ProductDetailCard({
                             Payment Method *
                         </label>
                         <div className="grid gap-3">
-                            <label className="flex items-center space-x-3 p-3 bg-black/20 border border-gray-600 rounded-lg cursor-pointer hover:border-green-500 transition-colors">
+                            <label className="flex items-center space-x-3 p-3 bg-black/20 border border-blue-500 rounded-lg cursor-pointer">
                                 <input
                                     type="radio"
                                     name="paymentMethod"
-                                    value="lisk_zar"
-                                    checked={formData.paymentMethod === 'lisk_zar'}
-                                    onChange={handleInputChange}
-                                    className="text-green-500"
-                                />
-                                <div className="flex items-center space-x-2">
-                                    <span className="text-green-400">💚</span>
-                                    <span className="text-white">Lisk ZAR Stablecoin</span>
-                                </div>
-                            </label>
-                            <label className="flex items-center space-x-3 p-3 bg-black/20 border border-gray-600 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value="celo"
-                                    checked={formData.paymentMethod === 'celo'}
+                                    value="usdc"
+                                    checked={formData.paymentMethod === 'usdc'}
                                     onChange={handleInputChange}
                                     className="text-blue-500"
                                 />
                                 <div className="flex items-center space-x-2">
-                                    <span className="text-blue-400">🔵</span>
-                                    <span className="text-white">CELO Blockchain</span>
+                                    <span className="text-white">USDC on Arc</span>
+                                    <span className="text-xs text-blue-300">Default</span>
                                 </div>
+                            </label>
+                            <label className="flex items-center space-x-3 p-3 bg-black/20 border border-gray-600 rounded-lg cursor-pointer hover:border-green-500 transition-colors">
+                                <input
+                                    type="radio"
+                                    name="paymentMethod"
+                                    value="cash"
+                                    checked={formData.paymentMethod === 'cash'}
+                                    onChange={handleInputChange}
+                                    className="text-green-500"
+                                />
+                                <span className="text-white">Cash on Delivery</span>
                             </label>
                         </div>
                     </div>
@@ -378,7 +355,7 @@ export function ProductDetailCard({
                         ) : isProcessing ? (
                             <>
                                 <div className="w-5 h-5 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                {formData.paymentMethod === 'celo' ? 'Processing CELO Payment...' : 'Processing Order...'}
+                                {formData.paymentMethod === 'usdc' ? 'Creating USDC order...' : 'Processing Order...'}
                             </>
                         ) : (
                             <>

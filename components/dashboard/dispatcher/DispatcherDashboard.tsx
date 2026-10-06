@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { StatCard, DeliveryCard } from './components';
 import { WalletCard } from '../shared/WalletCard';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/hooks/use-user';
 import { useEffect } from 'react';
 import { useBalanceDisplay } from '../../../hooks/use-balance-display';
 import { DispatcherOrder } from './types';
@@ -55,7 +55,7 @@ interface AvailableOrder {
     deliveryDistance: number;
     deliveryCost: number;
     totalCost: number;
-    paymentMethod: 'lisk_zar' | 'celo' | 'cash';
+    paymentMethod: 'usdc' | 'cash';
     paymentStatus: 'pending' | 'paid' | 'failed';
     orderStatus: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'in_transit' | 'arrived' | 'delivered' | 'cancelled';
     specialInstructions?: string;
@@ -405,7 +405,7 @@ export function DispatcherDashboard({ userProfile }: DispatcherDashboardProps) {
                                                 <div>
                                                     <p className="font-medium">Order #{order._id.slice(-6)}</p>
                                                     <p className="text-sm text-gray-600">
-                                                        R {order.dispatcherAmount.toFixed(2)} earnings
+                                                        {order.dispatcherAmount.toFixed(2)} USDC earnings
                                                     </p>
                                                 </div>
                                                 <CountdownTimer expiryTime={order.assignmentExpiryTime || 0} />

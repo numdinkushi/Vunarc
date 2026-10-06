@@ -16,7 +16,7 @@ export function CeloPaymentWithAddressFallback({
     onPaymentSuccess,
     onPaymentError
 }: CeloPaymentWithAddressFallbackProps) {
-    const [celoAddresses, setCeloAddresses] = useState<{
+    const [arcAddresses, setCeloAddresses] = useState<{
         farmerAddress: string | null;
         dispatcherAddress: string | null;
     }>({
@@ -44,8 +44,8 @@ export function CeloPaymentWithAddressFallback({
             });
 
             const [farmerResponse, dispatcherResponse] = await Promise.all([
-                fetch(`/api/users/celo-address?userId=${order.farmerId}`),
-                fetch(`/api/users/celo-address?userId=${order.dispatcherId}`)
+                fetch(`/api/users/arc-address?userId=${order.farmerId}`),
+                fetch(`/api/users/arc-address?userId=${order.dispatcherId}`)
             ]);
 
             console.log('API responses:', {
@@ -67,8 +67,8 @@ export function CeloPaymentWithAddressFallback({
 
             console.log('API data received:', { farmerData, dispatcherData });
 
-            const farmerAddress = farmerData.celoAddress;
-            const dispatcherAddress = dispatcherData.celoAddress;
+            const farmerAddress = farmerData.arcAddress;
+            const dispatcherAddress = dispatcherData.arcAddress;
 
             console.log('Extracted addresses:', { farmerAddress, dispatcherAddress });
 
@@ -78,9 +78,9 @@ export function CeloPaymentWithAddressFallback({
                 if (!farmerAddress) missingAddresses.push('Farmer');
                 if (!dispatcherAddress) missingAddresses.push('Dispatcher');
 
-                const errorMsg = `${missingAddresses.join(' and ')} CELO address${missingAddresses.length > 1 ? 'es are' : ' is'} not configured`;
+                const errorMsg = `${missingAddresses.join(' and ')} Arc address${missingAddresses.length > 1 ? 'es are' : ' is'} not configured`;
                 setError(errorMsg);
-                toast.error('CELO addresses not configured');
+                toast.error('Arc payout addresses are not configured');
                 return;
             }
 
@@ -90,7 +90,7 @@ export function CeloPaymentWithAddressFallback({
             });
 
             console.log('Addresses set successfully:', { farmerAddress, dispatcherAddress });
-            toast.success('CELO addresses loaded successfully');
+            toast.success('Arc payout addresses loaded');
 
         } catch (error) {
             // Handle errors gracefully without throwing
@@ -109,14 +109,14 @@ export function CeloPaymentWithAddressFallback({
         }
     };
 
-    console.log('Render state:', { isLoading, error, celoAddresses });
+    console.log('Render state:', { isLoading, error, arcAddresses });
 
     if (isLoading) {
         return (
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center space-x-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                    <p className="text-blue-600 text-sm">Loading CELO addresses from profiles...</p>
+                    <p className="text-blue-600 text-sm">Loading Arc payout addresses...</p>
                 </div>
             </div>
         );
@@ -138,24 +138,24 @@ export function CeloPaymentWithAddressFallback({
         );
     }
 
-    if (!celoAddresses.farmerAddress || !celoAddresses.dispatcherAddress) {
+    if (!arcAddresses.farmerAddress || !arcAddresses.dispatcherAddress) {
         return (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-red-600 text-sm">
-                    ⚠️ CELO addresses are missing. Please contact support.
+                    Arc payout addresses are missing. Ask the farmer and dispatcher to connect a wallet on Arc.
                 </p>
             </div>
         );
     }
 
-    console.log('Rendering CeloPayment with addresses:', celoAddresses);
+    console.log('Rendering CeloPayment with addresses:', arcAddresses);
 
     return (
         <CeloPayment
             zarAmount={order.totalCost}
             orderId={order._id}
-            farmerAddress={celoAddresses.farmerAddress}
-            dispatcherAddress={celoAddresses.dispatcherAddress}
+            farmerAddress={arcAddresses.farmerAddress}
+            dispatcherAddress={arcAddresses.dispatcherAddress}
             farmerZarAmount={order.farmerAmount || 0}
             dispatcherZarAmount={order.dispatcherAmount || 0}
             onPaymentSuccess={onPaymentSuccess}

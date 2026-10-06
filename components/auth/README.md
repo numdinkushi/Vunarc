@@ -76,8 +76,8 @@ export function useRegistration() {
 
     // Business logic
     const handleSubmit = async (e?: React.FormEvent) => {
-        // 1. Create user in stablecoin system
-        // 2. Create user profile in Convex
+        // 1. Require a connected Arc wallet
+        // 2. Save the buyer, farmer, or dispatcher profile in Convex
         // 3. Handle success/error
     };
 

@@ -14,7 +14,7 @@
 
 ### 3. Environment Variables
 - [ ] Verify VAPID keys in `.env`
-- [ ] Check Clerk keys are set
+- [ ] Check Convex, WalletConnect, and Arc contract env vars are set
 - [ ] Test push notifications
 
 ### 4. Build Commands

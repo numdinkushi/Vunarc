@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/hooks/use-user';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { userIntegrationService } from '../../../lib/services/integration/user-integration.service';
-import { walletService } from '../../../lib/services/wallet/wallet.service';
 import { RegistrationFormData } from '../types';
 import { SouthAfricanAddressData } from '../../ui/south-african-address';
 import { toast } from 'sonner';
@@ -11,8 +9,6 @@ import { toast } from 'sonner';
 export function useRegistration() {
     const { user } = useUser();
     const createUserWithStablecoinIntegration = useMutation(api.users.createUserWithStablecoinIntegration);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const upsertBalance = useMutation((api as unknown as any).balances.upsertUserBalance);
 
     const [formData, setFormData] = useState<RegistrationFormData>({
         role: 'buyer',
@@ -30,13 +26,12 @@ export function useRegistration() {
         location: '',
         businessName: '',
         businessLicense: '',
-        // Farmer-specific fields
         bio: '',
         farmSize: '',
         experience: '',
         specialties: [],
         isOrganicCertified: false,
-        profilePicture: '',
+        profilePicture: user?.imageUrl || '',
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -123,31 +118,16 @@ export function useRegistration() {
         setIsSubmitting(true);
 
         try {
-            const integrationResult = await userIntegrationService.completeUserIntegration({
-                clerkUserId: user.id,
-                email: user.emailAddresses[0].emailAddress,
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-            });
-
-            if (!integrationResult.success) {
-                toast.error(integrationResult.error || 'Failed to create user account');
-                return;
-            }
-
-            // Use coordinates from address if available, otherwise fall back to legacy coordinates
             const coordinates = formData.address.coordinates || formData.coordinates;
 
-            const convexData = {
+            await createUserWithStablecoinIntegration({
                 clerkUserId: user.id,
-                email: user.emailAddresses[0].emailAddress,
+                email: user.email,
                 role: formData.role,
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 phone: formData.phone,
-                // Legacy address field for backward compatibility
                 address: formData.address.fullAddress || formData.address.streetAddress,
-                // New South African address fields
                 addressProvince: formData.address.province,
                 addressCity: formData.address.city,
                 addressStreet: formData.address.streetAddress,
@@ -156,7 +136,6 @@ export function useRegistration() {
                 location: formData.address.city || formData.location,
                 businessName: formData.businessName,
                 businessLicense: formData.businessLicense,
-                // Farmer-specific fields
                 bio: formData.bio,
                 farmSize: formData.farmSize,
                 experience: formData.experience,
@@ -164,34 +143,9 @@ export function useRegistration() {
                 isOrganicCertified: formData.isOrganicCertified,
                 profilePicture: formData.profilePicture,
                 coordinates: coordinates,
-                liskId: integrationResult.stablecoinUser?.id,
-                publicKey: integrationResult.stablecoinUser?.publicKey,
-                paymentIdentifier: integrationResult.stablecoinUser?.paymentIdentifier,
-            };
+            });
 
-            await createUserWithStablecoinIntegration(convexData);
-
-            if (integrationResult.stablecoinUser?.id && integrationResult.mintedAmount) {
-                try {
-                    const balances = await walletService.fetchBalances(integrationResult.stablecoinUser.id);
-
-                    await upsertBalance({
-                        clerkUserId: user.id,
-                        token: 'L ZAR Coin',
-                        walletBalance: balances.walletBalance,
-                        ledgerBalance: 0, // Start with 0 ledger balance
-                    });
-
-                    if (integrationResult.mintedAmount > 0) {
-                        toast.success(`Welcome! R${integrationResult.mintedAmount} has been added to your wallet.`);
-                    }
-                } catch (balanceError) {
-                    console.log(balanceError);
-                    // Don't fail the registration if balance update fails
-                }
-            }
-
-            toast.success('Profile created successfully with payment activation! Welcome to Vunalet.');
+            toast.success('Profile created. Connect a wallet on Arc to pay and receive USDC.');
             window.location.href = '/dashboard';
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);

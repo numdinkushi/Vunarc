@@ -44,8 +44,8 @@ import { PAYMENT_SECURITY } from '@/constants';
 
 // The secret is automatically included in payment transactions
 await writeContract({
-    address: CELO_CONTRACT_ADDRESS,
-    abi: VUNALET_PAYMENTS_ABI,
+    address: ARC_CONTRACT_ADDRESS,
+    abi: VUNARC_PAYMENTS_ABI,
     functionName: 'processOrderPayment',
     args: [
         orderId,
@@ -61,7 +61,7 @@ await writeContract({
 
 ### Security Benefits
 - **Frontend Authentication**: Prevents unauthorized applications from using the contract
-- **Access Control**: Ensures only the legitimate Vunalet frontend can process payments
+- **Access Control**: Ensures only the legitimate Vunarc frontend can process payments
 - **Attack Prevention**: Provides protection against unauthorized contract interactions
 - **Administrative Control**: Secret can be updated by contract owner when needed
 
@@ -115,13 +115,13 @@ function emergencyWithdraw() external onlyOwner {
 #### Using Hardhat Console
 ```javascript
 // Connect to deployed contract
-const contract = await ethers.getContractAt("VunaletPayments", contractAddress);
+const contract = await ethers.getContractAt("VunarcPayments", contractAddress);
 
 // Check contract balance
 const balance = await contract.getContractBalance();
 console.log("Contract balance:", ethers.utils.formatEther(balance));
 
-// Withdraw 1 CELO
+// Withdraw 1 USDC (native on Arc, 18 decimals)
 await contract.withdraw(ethers.utils.parseEther("1.0"));
 
 // Withdraw to specific address
@@ -142,8 +142,8 @@ const AdminWithdrawal = () => {
 
     const withdrawFunds = async (amount: string) => {
         await writeContract({
-            address: CELO_CONTRACT_ADDRESS,
-            abi: VUNALET_PAYMENTS_ABI,
+            address: ARC_CONTRACT_ADDRESS,
+            abi: VUNARC_PAYMENTS_ABI,
             functionName: 'withdraw',
             args: [parseEther(amount)]
         });
@@ -210,7 +210,7 @@ const AdminWithdrawal = () => {
 - **Admin function usage frequency**
 
 ### Recommended Monitoring Tools
-- **Celoscan**: For transaction monitoring
+- **Arc Explorer** ([explorer.arc.io](https://explorer.arc.io)): For transaction monitoring
 - **The Graph**: For event indexing
 - **Custom dashboards**: For business metrics
 - **Alert systems**: For security events
@@ -224,7 +224,7 @@ const AdminWithdrawal = () => {
 - **Rotate secrets** periodically
 
 ### Upgrade Procedures
-- **Test all changes** on Alfajores testnet first
+- **Test payment changes** against a fresh Arc mainnet deployment before pointing the app at the new address. Arc Microgrants does not accept a testnet-only build.
 - **Coordinate with frontend team** for deployments
 - **Maintain backward compatibility** where possible
 - **Document all changes** for audit purposes

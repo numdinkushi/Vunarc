@@ -136,7 +136,7 @@ async function uploadImageToCloudinary(imagePath: string, categoryName: string):
         }
 
         const result = await cloudinary.uploader.upload(fullPath, {
-            folder: `vunalet/categories/${categoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+            folder: `vunarc/categories/${categoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
             transformation: [
                 { width: 800, height: 600, crop: 'limit' },
                 { quality: 'auto' },

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Deploying Vunalet PWA..."
+echo "🚀 Deploying Vunarc PWA..."
 
 # Generate PWA icons
 echo "📱 Generating PWA icons..."
@@ -15,7 +15,7 @@ echo "🚀 Deploying to Vercel..."
 vercel --prod
 
 echo "✅ PWA deployment complete!"
-echo "🌐 Visit: https://vunalet.vercel.app/"
+echo "🌐 Visit: https://vunarc.vercel.app/"
 echo ""
 echo "📱 PWA Testing Checklist:"
 echo "1. Open site on mobile Chrome/Safari"
@@ -25,4 +25,4 @@ echo "4. Check push notifications"
 echo ""
 echo "🔍 PWA Audit:"
 echo "Visit: https://www.pwabuilder.com/"
-echo "Enter: https://vunalet.vercel.app/" 
+echo "Enter: https://vunarc.vercel.app/" 

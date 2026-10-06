@@ -10,6 +10,7 @@ export function BuyerBalanceCard() {
         getBalanceColor,
         getBalanceIcon,
         formatLedgerBalance,
+        formatUsdc,
         isLoading,
         isRefreshing,
         refreshBalance
@@ -66,7 +67,7 @@ export function BuyerBalanceCard() {
                         Available Balance:
                     </span>
                     <span className={`font-bold ${getBalanceColor('wallet', walletBalance)}`}>
-                        R{walletBalance.toFixed(2)}
+                        {formatUsdc(walletBalance)}
                     </span>
                 </motion.div>
                 <motion.div

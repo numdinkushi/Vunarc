@@ -113,18 +113,18 @@ export const createOrder = mutation({
         deliveryDistance: v.number(),
         deliveryCost: v.number(),
         totalCost: v.number(),
-        paymentMethod: v.union(v.literal("lisk_zar"), v.literal("celo"), v.literal("cash")),
+        paymentMethod: v.union(v.literal("usdc"), v.literal("cash")),
         paymentStatus: v.union(v.literal("pending"), v.literal("paid"), v.literal("failed")),
         orderStatus: v.union(v.literal("pending"), v.literal("confirmed"), v.literal("preparing"), v.literal("ready"), v.literal("in_transit"), v.literal("arrived"), v.literal("delivered"), v.literal("cancelled")),
         // Celo blockchain payment fields
-        celoTxHash: v.optional(v.string()),
-        celoBlockNumber: v.optional(v.number()),
-        celoFromAddress: v.optional(v.string()),
-        celoAmountPaid: v.optional(v.number()),
+        usdcTxHash: v.optional(v.string()),
+        usdcBlockNumber: v.optional(v.number()),
+        usdcFromAddress: v.optional(v.string()),
+        usdcAmountPaid: v.optional(v.number()),
         // Celo recipient addresses for payment distribution
-        celoFarmerAddress: v.optional(v.string()),
-        celoDispatcherAddress: v.optional(v.string()),
-        celoPlatformAddress: v.optional(v.string()),
+        usdcFarmerAddress: v.optional(v.string()),
+        usdcDispatcherAddress: v.optional(v.string()),
+        usdcPlatformAddress: v.optional(v.string()),
         specialInstructions: v.optional(v.string()),
         estimatedPickupTime: v.optional(v.string()),
         estimatedDeliveryTime: v.optional(v.string()),
@@ -241,13 +241,13 @@ export const getOrdersByBuyerWithFarmerInfo = query({
         return orders.map(order => ({
             ...order,
             // Explicitly include CELO address fields
-            celoFarmerAddress: order.celoFarmerAddress,
-            celoDispatcherAddress: order.celoDispatcherAddress,
-            celoPlatformAddress: order.celoPlatformAddress,
-            celoFromAddress: order.celoFromAddress,
-            celoTxHash: order.celoTxHash,
-            celoBlockNumber: order.celoBlockNumber,
-            celoAmountPaid: order.celoAmountPaid,
+            usdcFarmerAddress: order.usdcFarmerAddress,
+            usdcDispatcherAddress: order.usdcDispatcherAddress,
+            usdcPlatformAddress: order.usdcPlatformAddress,
+            usdcFromAddress: order.usdcFromAddress,
+            usdcTxHash: order.usdcTxHash,
+            usdcBlockNumber: order.usdcBlockNumber,
+            usdcAmountPaid: order.usdcAmountPaid,
             farmerInfo: farmerMap.get(order.farmerId) || null,
             dispatcherInfo: order.dispatcherId ? dispatcherMap.get(order.dispatcherId) || null : null
         }));
@@ -507,7 +507,7 @@ export const updatePaymentStatus = mutation({
 export const updatePaymentMethod = mutation({
     args: {
         orderId: v.id("orders"),
-        paymentMethod: v.union(v.literal("lisk_zar"), v.literal("celo"), v.literal("cash")),
+        paymentMethod: v.union(v.literal("usdc"), v.literal("cash")),
     },
     handler: async (ctx, args) => {
         return await ctx.db.patch(args.orderId, {
@@ -755,28 +755,28 @@ export const getDispatcherPendingTotal = query({
 });
 
 // Update Celo payment details
-export const updateCeloPayment = mutation({
+export const updateUsdcPayment = mutation({
     args: {
         orderId: v.id("orders"),
-        celoTxHash: v.string(),
-        celoBlockNumber: v.optional(v.number()),
-        celoFromAddress: v.string(),
-        celoAmountPaid: v.number(),
-        celoFarmerAddress: v.optional(v.string()),
-        celoDispatcherAddress: v.optional(v.string()),
-        celoPlatformAddress: v.optional(v.string()),
+        usdcTxHash: v.string(),
+        usdcBlockNumber: v.optional(v.number()),
+        usdcFromAddress: v.string(),
+        usdcAmountPaid: v.number(),
+        usdcFarmerAddress: v.optional(v.string()),
+        usdcDispatcherAddress: v.optional(v.string()),
+        usdcPlatformAddress: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
-        const { orderId, celoTxHash, celoBlockNumber, celoFromAddress, celoAmountPaid, celoFarmerAddress, celoDispatcherAddress, celoPlatformAddress } = args;
+        const { orderId, usdcTxHash, usdcBlockNumber, usdcFromAddress, usdcAmountPaid, usdcFarmerAddress, usdcDispatcherAddress, usdcPlatformAddress } = args;
 
         return await ctx.db.patch(orderId, {
-            celoTxHash,
-            celoBlockNumber,
-            celoFromAddress,
-            celoAmountPaid,
-            celoFarmerAddress,
-            celoDispatcherAddress,
-            celoPlatformAddress,
+            usdcTxHash,
+            usdcBlockNumber,
+            usdcFromAddress,
+            usdcAmountPaid,
+            usdcFarmerAddress,
+            usdcDispatcherAddress,
+            usdcPlatformAddress,
             paymentStatus: "paid",
             updatedAt: Date.now(),
         });

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from 'convex/react';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/hooks/use-user';
 import { api } from '../../../../convex/_generated/api';
 import { FarmerUserProfile, ConvexOrder, TransformedOrder, DashboardStats } from '../types/dashboard-types';
 import { useBalanceDisplay } from '../../../../hooks/use-balance-display';

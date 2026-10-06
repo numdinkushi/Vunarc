@@ -43,7 +43,7 @@ export function DashboardStats({ stats, isLoading = false }: DashboardStatsProps
         },
         {
             title: 'Total Revenue',
-            value: `R${(stats.totalRevenue || 0).toFixed(2)}`, // FIXED: Add fallback
+            value: `${(stats.totalRevenue || 0).toFixed(2)} USDC`,
             icon: DollarSign,
             color: 'text-yellow-600',
             bgColor: 'bg-yellow-50',

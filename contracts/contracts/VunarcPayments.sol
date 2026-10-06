@@ -6,12 +6,12 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
- * @title VunaletPayments
- * @dev Smart contract for processing payments on the Vunalet platform
- * @notice This contract handles order payments and distributes funds to farmers and dispatchers
+ * @title VunarcPayments
+ * @dev Smart contract for processing payments on the Vunarc platform
+ * @notice On Arc, msg.value is native USDC (18 decimals). The split pays the farmer, dispatcher, and platform in USDC.
  * @notice Frontend is the single source of truth for payment calculations
  */
-contract VunaletPayments is Ownable, ReentrancyGuard, Pausable {
+contract VunarcPayments is Ownable, ReentrancyGuard, Pausable {
     // Payment structure
     struct Payment {
         address buyer;

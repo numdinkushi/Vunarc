@@ -1,3 +1,2 @@
-// Token constants
-export const LZC_TOKEN_NAME = 'L ZAR Coin';
-export const LZC_TOKEN_SYMBOL = 'LZC'; 
+export const USDC_TOKEN_NAME = 'USDC';
+export const USDC_TOKEN_SYMBOL = 'USDC'; 

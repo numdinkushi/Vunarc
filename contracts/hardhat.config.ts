@@ -1,44 +1,27 @@
 import type { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import { config as dotEnvConfig } from "dotenv";
-// import { CELO_NETWORKS } from "../constants/payments";
 
+dotEnvConfig({ path: "../.env.local" });
 dotEnvConfig({ path: "../.env" });
+
+const deployerKey = process.env.ARC_PRIVATE_KEY;
+if (!deployerKey) {
+    console.warn("ARC_PRIVATE_KEY is not set; Arc deploys will fail.");
+}
 
 const config: HardhatUserConfig = {
     networks: {
-        alfajores: {
-            accounts: [process.env.CELO_PRIVATE_KEY ?? "0x0000000000000000000000000000000000000000000000000000000000000001"],
-            url: "https://alfajores-forno.celo-testnet.org",
+        arc: {
+            accounts: deployerKey ? [deployerKey] : [],
+            url: "https://rpc.mainnet.arc.io",
+            chainId: 5042,
         },
-        celo: {
-            accounts: [process.env.CELO_PRIVATE_KEY ?? "0x0000000000000000000000000000000000000000000000000000000000000001"],
-            url: "https://forno.celo.org",
+        arcTestnet: {
+            accounts: deployerKey ? [deployerKey] : [],
+            url: "https://rpc.testnet.arc.io",
+            chainId: 5042002,
         },
-    },
-    etherscan: {
-        apiKey: {
-            alfajores: process.env.CELOSCAN_API_KEY ?? "",
-            celo: process.env.CELOSCAN_API_KEY ?? "",
-        },
-        customChains: [
-            {
-                chainId: 44787,
-                network: "alfajores",
-                urls: {
-                    apiURL: "https://api-alfajores.celoscan.io/api",
-                    browserURL: "https://alfajores.celoscan.io",
-                },
-            },
-            {
-                chainId: 42220,
-                network: "celo",
-                urls: {
-                    apiURL: "https://api.celoscan.io/api",
-                    browserURL: "https://celoscan.io",
-                },
-            },
-        ],
     },
     sourcify: {
         enabled: false,
@@ -54,4 +37,4 @@ const config: HardhatUserConfig = {
     },
 };
 
-export default config; 
+export default config;

@@ -124,7 +124,7 @@ export function PWAInstaller() {
             setIsInstalled(true);
             setShowPrompt(false);
             setDeferredPrompt(null);
-            toast.success('Vunalet installed successfully!');
+            toast.success('Vunarc installed successfully!');
         };
 
         // Add event listeners
@@ -203,7 +203,7 @@ export function PWAInstaller() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                             <Smartphone className="w-5 h-5 text-green-600" />
-                            <CardTitle className="text-lg">Install Vunalet</CardTitle>
+                            <CardTitle className="text-lg">Install Vunarc</CardTitle>
                         </div>
                         <Button
                             variant="ghost"

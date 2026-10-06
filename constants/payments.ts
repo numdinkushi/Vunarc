@@ -1,18 +1,16 @@
-// Payment method enums
+import { formatEther, parseEther } from 'viem';
+
 export enum PaymentMethod {
-    LISK_ZAR = 'lisk_zar',
-    CELO = 'celo',
-    CASH = 'cash'
+    USDC = 'usdc',
+    CASH = 'cash',
 }
 
-// Payment status enums
 export enum PaymentStatus {
     PENDING = 'pending',
     PAID = 'paid',
-    FAILED = 'failed'
+    FAILED = 'failed',
 }
 
-// Order status enums
 export enum OrderStatus {
     PENDING = 'pending',
     CONFIRMED = 'confirmed',
@@ -21,79 +19,82 @@ export enum OrderStatus {
     IN_TRANSIT = 'in_transit',
     ARRIVED = 'arrived',
     DELIVERED = 'delivered',
-    CANCELLED = 'cancelled'
+    CANCELLED = 'cancelled',
 }
 
-// Currency types
 export enum Currency {
-    ZAR = 'ZAR',
-    CELO = 'CELO',
-    USD = 'USD'
+    USDC = 'USDC',
 }
 
-// Conversion rates (configurable)
-export const CONVERSION_RATES = {
-    // 1 ZAR = 0.003 CELO (example rate - should be fetched from API in production)
-    ZAR_TO_CELO: 0.003,
-    // 1 CELO = 333.33 ZAR (inverse of above)
-    CELO_TO_ZAR: 333.33,
-    // Platform fee rates
-    PLATFORM_FEE_RATE_BASIS_POINTS: 250, // 2.5%
-    PLATFORM_FEE_RATE_PERCENTAGE: 2.5,
-} as const;
+export const ARC_CHAIN_ID = 5042;
 
-// Network configuration
-export const CELO_NETWORKS = {
+export const ARC_NETWORKS = {
     MAINNET: {
-        chainId: 42220,
-        name: 'Celo Mainnet',
-        rpcUrl: 'https://forno.celo.org',
-        blockExplorer: 'https://celoscan.io',
-        apiUrl: 'https://api.celoscan.io/api'
+        chainId: ARC_CHAIN_ID,
+        name: 'Arc',
+        rpcUrl: 'https://rpc.mainnet.arc.io',
+        blockExplorer: 'https://explorer.arc.io',
+        nativeCurrency: {
+            name: 'USDC',
+            symbol: 'USDC',
+            decimals: 18,
+        },
     },
-    ALFAJORES: {
-        chainId: 44787,
-        name: 'Celo Alfajores Testnet',
-        rpcUrl: 'https://alfajores-forno.celo-testnet.org',
-        blockExplorer: 'https://alfajores.celoscan.io',
-        apiUrl: 'https://api-alfajores.celoscan.io/api'
-    }
 } as const;
 
-// Payment method display names
+export const PLATFORM_FEE_RATE_BASIS_POINTS = 250;
+export const PLATFORM_FEE_RATE_PERCENTAGE = 2.5;
+
+export const CONVERSION_RATES = {
+    PLATFORM_FEE_RATE_BASIS_POINTS,
+    PLATFORM_FEE_RATE_PERCENTAGE,
+} as const;
+
 export const PAYMENT_METHOD_LABELS = {
-    [PaymentMethod.LISK_ZAR]: 'Lisk ZAR Stablecoin',
-    [PaymentMethod.CELO]: 'Celo Blockchain',
-    [PaymentMethod.CASH]: 'Cash on Delivery'
+    [PaymentMethod.USDC]: 'USDC on Arc',
+    [PaymentMethod.CASH]: 'Cash on Delivery',
 } as const;
 
-// Payment method descriptions
 export const PAYMENT_METHOD_DESCRIPTIONS = {
-    [PaymentMethod.LISK_ZAR]: 'Pay with ZAR stablecoin through our integrated payment system',
-    [PaymentMethod.CELO]: 'Pay directly with CELO using your Web3 wallet',
-    [PaymentMethod.CASH]: 'Pay with cash when your order is delivered'
+    [PaymentMethod.USDC]: 'Pay with USDC. Gas is USDC too, and the payment settles on Arc.',
+    [PaymentMethod.CASH]: 'Pay with cash when your order is delivered',
 } as const;
 
-// Frontend authorization configuration
 export const PAYMENT_SECURITY = {
-    // Secret for frontend authorization (should match NEXT_PUBLIC_PAYMENT_SECRET)
-    SECRET: process.env.NEXT_PUBLIC_PAYMENT_SECRET || 'vunalet_secure_payments',
+    SECRET: process.env.NEXT_PUBLIC_PAYMENT_SECRET || 'vunarc_secure_payments',
 } as const;
 
-// Helper functions for conversions
-export const convertZarToCelo = (zarAmount: number): number => {
-    return Number((zarAmount * CONVERSION_RATES.ZAR_TO_CELO).toFixed(6));
-};
-
-export const convertCeloToZar = (celoAmount: number): number => {
-    return Number((celoAmount * CONVERSION_RATES.CELO_TO_ZAR).toFixed(2));
+export const formatUsdc = (amount: number): string => {
+    return `${amount.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })} USDC`;
 };
 
 export const calculatePlatformFee = (amount: number): number => {
-    return Number((amount * CONVERSION_RATES.PLATFORM_FEE_RATE_PERCENTAGE / 100).toFixed(6));
+    return Number(((amount * PLATFORM_FEE_RATE_PERCENTAGE) / 100).toFixed(6));
 };
 
-// Type guards
+/**
+ * Split a checkout into native USDC wei.
+ * On Arc, msg.value is USDC with 18 decimals, and the three parts must sum exactly.
+ */
+export const splitUsdcPayment = (farmerAmount: number, dispatcherAmount: number) => {
+    const farmerWei = parseEther(farmerAmount.toFixed(6));
+    const dispatcherWei = parseEther(dispatcherAmount.toFixed(6));
+    const platformWei = ((farmerWei + dispatcherWei) * BigInt(PLATFORM_FEE_RATE_BASIS_POINTS)) / BigInt(10000);
+    const totalWei = farmerWei + dispatcherWei + platformWei;
+
+    return {
+        farmerWei,
+        dispatcherWei,
+        platformWei,
+        totalWei,
+        totalUsdc: Number(formatEther(totalWei)),
+        platformUsdc: Number(formatEther(platformWei)),
+    };
+};
+
 export const isValidPaymentMethod = (method: string): method is PaymentMethod => {
     return Object.values(PaymentMethod).includes(method as PaymentMethod);
 };
@@ -104,4 +105,4 @@ export const isValidPaymentStatus = (status: string): status is PaymentStatus =>
 
 export const isValidOrderStatus = (status: string): status is OrderStatus => {
     return Object.values(OrderStatus).includes(status as OrderStatus);
-}; 
+};

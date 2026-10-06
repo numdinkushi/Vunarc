@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { XCircle } from 'lucide-react';
 import { Order } from '../types';
-import { convertZarToCelo } from '../../../../constants/payments';
+import { formatUsdc } from '../../../../constants/payments';
 
 interface CancellationFormProps {
     order: Order;
@@ -24,14 +24,7 @@ export function CancellationForm({
     onCancelConfirm,
     isCancelling
 }: CancellationFormProps) {
-    // Calculate CELO amounts if payment method is CELO
-    const formatCancellationAmount = (amount: number) => {
-        if (order.paymentMethod === 'celo') {
-            const celoAmount = convertZarToCelo(amount / 2); // Half the amount for cancellation
-            return `${celoAmount.toFixed(6)} CELO`;
-        }
-        return `R ${(amount / 2).toFixed(2)}`;
-    };
+    const formatCancellationAmount = (amount: number) => formatUsdc(amount);
 
     return (
         <div className="space-y-4">

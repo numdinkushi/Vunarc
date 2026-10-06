@@ -1,23 +1,22 @@
 {
-  "name": "vunalet-contracts",
+  "name": "vunarc-contracts",
   "version": "1.0.0",
-  "description": "Smart contracts for Vunalet payment system",
+  "description": "Smart contracts for Vunarc payment system",
   "main": "index.js",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy:alfajores": "hardhat run scripts/deploy.ts --network alfajores",
-    "deploy:celo": "hardhat run scripts/deploy.ts --network celo",
-    "verify:alfajores": "hardhat verify --network alfajores",
-    "verify:celo": "hardhat verify --network celo"
+    "deploy:arc": "hardhat run scripts/deploy.ts --network arc",
+    "deploy:arc-testnet": "hardhat run scripts/deploy.ts --network arcTestnet"
   },
   "keywords": [
     "solidity",
     "hardhat",
-    "celo",
+    "arc",
+    "usdc",
     "payments"
   ],
-  "author": "Vunalet Team",
+  "author": "Vunarc Team",
   "license": "MIT",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",

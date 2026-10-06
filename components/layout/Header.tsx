@@ -8,14 +8,7 @@ import {
     Menu,
     X
 } from 'lucide-react';
-import { WalletConnect } from '@/components/web3/WalletConnect';
-import {
-    SignInButton,
-    SignUpButton,
-    UserButton,
-    SignedIn,
-    SignedOut
-} from '@clerk/nextjs';
+import { AuthControls } from '@/components/auth/AuthControls';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -100,7 +93,7 @@ export function Header() {
                             >
                                 <Image
                                     src={isScrolled ? "/assets/logo/logo.png" : "/assets/logo/logo_white.png"}
-                                    alt="Vunalet Logo"
+                                    alt="Vunarc Logo"
                                     width={40}
                                     height={40}
                                     className="rounded-lg"
@@ -112,7 +105,7 @@ export function Header() {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.2 }}
                             >
-                                Vunalet
+                                Vunarc
                             </motion.h1>
                         </motion.div>
                     </Link>
@@ -170,44 +163,7 @@ export function Header() {
                             <ShoppingCart size={20} />
                         </motion.button>
 
-                        <SignedOut>
-                            <motion.div className="flex items-center space-x-2">
-                                <SignInButton mode="modal">
-                                    <motion.button
-                                        className={`px-4 py-2 rounded-lg transition-all duration-300 ${isScrolled
-                                            ? 'text-gray-700 hover:text-green-600'
-                                            : 'text-white/90 hover:text-white'
-                                            }`}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                    >
-                                        Sign In
-                                    </motion.button>
-                                </SignInButton>
-                                <SignUpButton mode="modal">
-                                    <motion.button
-                                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                    >
-                                        Sign Up
-                                    </motion.button>
-                                </SignUpButton>
-                            </motion.div>
-                        </SignedOut>
-
-                        <SignedIn>
-                            <div className="flex items-center gap-3">
-                                <WalletConnect size="sm" variant="outline" />
-                                <UserButton
-                                    appearance={{
-                                        elements: {
-                                            avatarBox: "w-8 h-8"
-                                        }
-                                    }}
-                                />
-                            </div>
-                        </SignedIn>
+                        <AuthControls scrolled={isScrolled} />
                     </div>
 
                     {/* Mobile menu button */}
@@ -257,26 +213,9 @@ export function Header() {
                                     );
                                 })}
 
-                                <SignedOut>
-                                    <div className="pt-4 space-y-2">
-                                        <SignInButton mode="modal">
-                                            <button className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-green-600 rounded-lg hover:bg-green-50 transition-all duration-300">
-                                                Sign In
-                                            </button>
-                                        </SignInButton>
-                                        <SignUpButton mode="modal">
-                                            <button className="block w-full text-left px-3 py-2 text-base font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-300">
-                                                Sign Up
-                                            </button>
-                                        </SignUpButton>
-                                    </div>
-                                </SignedOut>
-
-                                <SignedIn>
-                                    <div className="pt-4">
-                                        <UserButton />
-                                    </div>
-                                </SignedIn>
+                                <div className="pt-4">
+                                    <AuthControls compact />
+                                </div>
                             </div>
                         </motion.div>
                     )}

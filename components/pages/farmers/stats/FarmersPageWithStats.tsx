@@ -3,7 +3,7 @@
 import { useQuery } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { FarmerCard } from '../../../app/cards/farmer-card';
-import { VideoBackground } from '../../../../components/ui/VideoBackground';
+import { VideoBackground } from '../../../ui/VideoBackground';
 import { motion } from 'framer-motion';
 import { Farmer } from '../types';
 

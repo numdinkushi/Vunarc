@@ -43,7 +43,7 @@ export function PWAInstructions() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                             <Smartphone className="w-5 h-5 text-blue-600" />
-                            <CardTitle className="text-lg">Install Vunalet</CardTitle>
+                            <CardTitle className="text-lg">Install Vunarc</CardTitle>
                         </div>
                         <Button
                             variant="ghost"
@@ -55,7 +55,7 @@ export function PWAInstructions() {
                         </Button>
                     </div>
                     <CardDescription>
-                        Add Vunalet to your home screen for quick access
+                        Add Vunarc to your home screen for quick access
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">

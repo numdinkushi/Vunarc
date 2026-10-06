@@ -16,7 +16,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-        // Get user profile from Convex using clerkUserId
         const userProfile = await convex.query(api.users.getUserProfile, {
             clerkUserId: userId as string
         });
@@ -25,18 +24,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Return CELO address if available
         return res.status(200).json({
             userId: userProfile._id,
-            celoAddress: userProfile.celoAddress || null,
-            hasAddress: !!userProfile.celoAddress
+            arcAddress: userProfile.arcAddress || null,
+            hasAddress: !!userProfile.arcAddress
         });
-
     } catch (error) {
-        console.error('Error fetching user CELO address:', error);
+        console.error('Error fetching Arc address:', error);
         return res.status(500).json({
-            error: 'Failed to fetch user CELO address',
+            error: 'Failed to fetch Arc address',
             details: error instanceof Error ? error.message : 'Unknown error'
         });
     }
-} 
+}

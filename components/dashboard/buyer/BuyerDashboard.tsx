@@ -6,7 +6,7 @@ import { OrderModal } from './modals';
 import { filterOrdersByStatus } from './utils';
 import { Order } from './types';
 import { WalletCard } from '../shared/WalletCard';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/hooks/use-user';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useOrderManagement } from '../../../hooks/use-order-management';
@@ -42,7 +42,7 @@ interface ConvexOrder {
     deliveryDistance: number;
     deliveryCost: number;
     totalCost: number;
-    paymentMethod: 'lisk_zar' | 'celo' | 'cash';
+    paymentMethod: 'usdc' | 'cash';
     paymentStatus: 'pending' | 'paid' | 'failed';
     orderStatus: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'in_transit' | 'arrived' | 'delivered' | 'cancelled';
     specialInstructions?: string;
@@ -51,18 +51,18 @@ interface ConvexOrder {
     actualDeliveryTime?: string;
     createdAt: number;
     updatedAt: number;
-    celoFarmerAddress?: string;
-    celoDispatcherAddress?: string;
-    celoPlatformAddress?: string;
-    celoFromAddress?: string;
+    usdcFarmerAddress?: string;
+    usdcDispatcherAddress?: string;
+    usdcPlatformAddress?: string;
+    usdcFromAddress?: string;
     farmerInfo?: {
-        celoAddress?: string;
+        arcAddress?: string;
         firstName: string;
         lastName: string;
         businessName?: string;
     } | null;
     dispatcherInfo?: {
-        celoAddress?: string;
+        arcAddress?: string;
         firstName: string;
         lastName: string;
     } | null;
@@ -149,10 +149,10 @@ export default function BuyerDashboard() {
             farmerId: order.farmerId,
             dispatcherAmount: order.dispatcherAmount,
             farmerAmount: order.farmerAmount,
-            celoFarmerAddress: order.farmerInfo?.celoAddress || order.celoFarmerAddress,
-            celoDispatcherAddress: order.dispatcherInfo?.celoAddress || order.celoDispatcherAddress,
-            celoPlatformAddress: order.celoPlatformAddress,
-            celoFromAddress: order.celoFromAddress,
+            usdcFarmerAddress: order.farmerInfo?.arcAddress || order.usdcFarmerAddress,
+            usdcDispatcherAddress: order.dispatcherInfo?.arcAddress || order.usdcDispatcherAddress,
+            usdcPlatformAddress: order.usdcPlatformAddress,
+            usdcFromAddress: order.usdcFromAddress,
         })) || [];
     };
 

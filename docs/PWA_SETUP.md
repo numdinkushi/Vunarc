@@ -1,8 +1,8 @@
-# Vunalet PWA Setup Guide
+# Vunarc PWA Setup Guide
 
 ## Overview
 
-Vunalet is configured as a Progressive Web App (PWA) that provides a native app-like experience on mobile devices. This setup includes offline functionality, push notifications, and app installation capabilities.
+Vunarc is configured as a Progressive Web App (PWA) that provides a native app-like experience on mobile devices. This setup includes offline functionality, push notifications, and app installation capabilities.
 
 ## Features
 
@@ -31,7 +31,7 @@ Vunalet is configured as a Progressive Web App (PWA) that provides a native app-
 ## File Structure
 
 ```
-vunalet/
+vunarc/
 ├── public/
 │   ├── manifest.json          # PWA manifest
 │   ├── sw.js                  # Service Worker
@@ -215,7 +215,7 @@ caches.keys().then(cacheNames => {
 });
 
 // Clear IndexedDB
-indexedDB.deleteDatabase('VunaletOfflineDB');
+indexedDB.deleteDatabase('VunarcOfflineDB');
 ```
 
 ## Future Enhancements

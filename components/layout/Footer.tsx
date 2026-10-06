@@ -21,12 +21,12 @@ export function Footer() {
               <div className="relative w-12 h-12">
                 <Image
                   src="/assets/logo/logo_white.png"
-                  alt="Vunalet Logo"
+                  alt="Vunarc Logo"
                   fill
                   className="object-contain"
                 />
               </div>
-              <h3 className="text-3xl font-bold">Vunalet</h3>
+              <h3 className="text-3xl font-bold">Vunarc</h3>
             </div>
             <p className="text-gray-300 mb-6 leading-relaxed max-w-md">
               Harvesting the future through sustainable agriculture and direct farmer-consumer connections across South Africa.
@@ -147,7 +147,7 @@ export function Footer() {
           transition={{ delay: 0.4, duration: 0.6 }}
         >
           <p className="text-gray-300">
-            © 2024 Vunalet. All rights reserved. Built with ❤️ for South African farmers.
+            © 2024 Vunarc. All rights reserved. Built with ❤️ for South African farmers.
           </p>
         </motion.div>
       </div>

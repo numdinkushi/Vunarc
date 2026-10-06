@@ -24,7 +24,6 @@ import { RatingForm } from './RatingForm';
 import { CeloPayment } from "../../../payments/CeloPayment";
 import { OrderActions } from './OrderActions';
 import { OrderCompletionMessage } from './OrderCompletionMessage';
-import { convertZarToCelo } from '../../../../constants/payments';
 import { XCircle } from 'lucide-react';
 import { CeloPaymentWithAddressFallback } from '../../../payments/CeloPaymentWithAddressFallback';
 
@@ -62,11 +61,6 @@ export function OrderModal({ order, isOpen, onClose, buyerLiskId }: OrderModalPr
     const handleCancelConfirm = async () => {
         if (!cancellationReason.trim()) {
             toast.error('Please provide a reason for cancellation');
-            return;
-        }
-
-        if (!buyerLiskId) {
-            toast.error('Payment account not found. Please contact support.');
             return;
         }
 
@@ -110,14 +104,8 @@ export function OrderModal({ order, isOpen, onClose, buyerLiskId }: OrderModalPr
     const handleConfirmOrder = async () => {
         // For CELO payments, we don't need to call confirmOrder anymore
         // The CeloPayment component handles everything internally
-        if (order.paymentMethod === 'celo') {
+        if (order.paymentMethod === 'usdc') {
             // Just show the payment modal - CeloPayment component will handle the rest
-            return;
-        }
-
-        // Existing Lisk ZAR logic
-        if (!buyerLiskId) {
-            toast.error('Payment account not found. Please contact support.');
             return;
         }
 
@@ -241,11 +229,11 @@ export function OrderModal({ order, isOpen, onClose, buyerLiskId }: OrderModalPr
                     <OrderDetails order={order} />
 
                     {/* Debug: Log order data */}
-                    {/* {order.paymentMethod === 'celo' && order.orderStatus === 'arrived' && (
+                    {/* {order.paymentMethod === 'usdc' && order.orderStatus === 'arrived' && (
                         <div className="p-2 bg-gray-100 text-xs">
                             <p>Debug - CELO Addresses:</p>
-                            <p>Farmer: {order.celoFarmerAddress || 'NULL/UNDEFINED'}</p>
-                            <p>Dispatcher: {order.celoDispatcherAddress || 'NULL/UNDEFINED'}</p>
+                            <p>Farmer: {order.usdcFarmerAddress || 'NULL/UNDEFINED'}</p>
+                            <p>Dispatcher: {order.usdcDispatcherAddress || 'NULL/UNDEFINED'}</p>
                             <p>Payment Status: {order.paymentStatus}</p>
                             <p>Order ID: {order._id}</p>
                             <p>Farmer ID: {order.farmerId}</p>
@@ -255,7 +243,7 @@ export function OrderModal({ order, isOpen, onClose, buyerLiskId }: OrderModalPr
                     )} */}
 
                     {/* CELO Payment Component - FIXED: Fetch addresses if missing */}
-                    {order.paymentMethod === 'celo' &&
+                    {order.paymentMethod === 'usdc' &&
                         order.orderStatus === 'arrived' &&
                         order.paymentStatus === 'pending' && (
                             <CeloPaymentWithAddressFallback
@@ -266,26 +254,26 @@ export function OrderModal({ order, isOpen, onClose, buyerLiskId }: OrderModalPr
                         )}
 
                     {/* Show error message if CELO addresses are missing */}
-                    {order.paymentMethod === 'celo' &&
+                    {order.paymentMethod === 'usdc' &&
                         order.orderStatus === 'arrived' &&
                         order.paymentStatus === 'pending' &&
-                        (!order.celoFarmerAddress ||
-                            order.celoFarmerAddress.trim() === '' ||
-                            !order.celoDispatcherAddress ||
-                            order.celoDispatcherAddress.trim() === '') && (
+                        (!order.usdcFarmerAddress ||
+                            order.usdcFarmerAddress.trim() === '' ||
+                            !order.usdcDispatcherAddress ||
+                            order.usdcDispatcherAddress.trim() === '') && (
                             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                                 <p className="text-red-600 text-sm">
-                                    ⚠️ CELO addresses are missing or empty.
+                                    Arc payout addresses are missing. Connect wallets on Arc for the farmer and dispatcher.
                                     <br />
-                                    Farmer: {order.celoFarmerAddress || 'NULL'}
+                                    Farmer: {order.usdcFarmerAddress || 'NULL'}
                                     <br />
-                                    Dispatcher: {order.celoDispatcherAddress || 'NULL'}
+                                    Dispatcher: {order.usdcDispatcherAddress || 'NULL'}
                                 </p>
                             </div>
                         )}
 
                     {/* Cancel Order Button for CELO - NEW: Only show when order status is 'arrived' and below payment */}
-                    {order.paymentMethod === 'celo' && order.orderStatus === 'arrived' && order.paymentStatus === 'pending' && (
+                    {order.paymentMethod === 'usdc' && order.orderStatus === 'arrived' && order.paymentStatus === 'pending' && (
                         <div className="flex justify-center">
                             <Button
                                 variant="outline"

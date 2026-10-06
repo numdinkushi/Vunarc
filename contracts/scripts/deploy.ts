@@ -1,76 +1,101 @@
 /* eslint-disable */
 import hre from "hardhat";
-import { stringToBytes, keccak256 } from "viem";
+import { createPublicClient, createWalletClient, http, keccak256, stringToBytes, type Chain } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+
+const ARC_MAINNET: Chain = {
+    id: 5042,
+    name: "Arc",
+    nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+    rpcUrls: {
+        default: { http: ["https://rpc.mainnet.arc.io"] },
+        public: { http: ["https://rpc.mainnet.arc.io"] },
+    },
+    blockExplorers: {
+        default: { name: "Arc Explorer", url: "https://explorer.arc.io" },
+    },
+};
+
+const ARC_TESTNET: Chain = {
+    id: 5042002,
+    name: "Arc Testnet",
+    nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+    rpcUrls: {
+        default: { http: ["https://rpc.testnet.arc.io"] },
+        public: { http: ["https://rpc.testnet.arc.io"] },
+    },
+    blockExplorers: {
+        default: { name: "Arc Explorer", url: "https://explorer.testnet.arc.io" },
+    },
+    testnet: true,
+};
+
+const MIN_MAX_FEE_PER_GAS = 20_000_000_000n;
 
 async function main() {
-    console.log("Deploying VunaletPayments contract...");
+    console.log("Deploying VunarcPayments contract...");
 
-    // Set deployment parameters
-    const feeRecipient = process.env.FEE_RECIPIENT_ADDRESS || process.env.NEXT_PUBLIC_PLATFORM_CELO_ADDRESS;
-    const secret = process.env.NEXT_PUBLIC_PAYMENT_SECRET || "vunalet_secure_payments";
+    const feeRecipient = process.env.FEE_RECIPIENT_ADDRESS || process.env.NEXT_PUBLIC_PLATFORM_ARC_ADDRESS;
+    const secret = process.env.NEXT_PUBLIC_PAYMENT_SECRET || "vunarc_secure_payments";
+    const privateKey = process.env.ARC_PRIVATE_KEY as `0x${string}` | undefined;
 
     if (!feeRecipient) {
-        throw new Error("FEE_RECIPIENT_ADDRESS or NEXT_PUBLIC_PLATFORM_CELO_ADDRESS environment variable is required");
+        throw new Error("FEE_RECIPIENT_ADDRESS or NEXT_PUBLIC_PLATFORM_ARC_ADDRESS environment variable is required");
+    }
+    if (!privateKey) {
+        throw new Error("ARC_PRIVATE_KEY is required to deploy");
     }
 
-    // Create secret hash using viem
     const secretHash = keccak256(stringToBytes(secret));
+    const chain = hre.network.name === "arcTestnet" ? ARC_TESTNET : ARC_MAINNET;
+    const account = privateKeyToAccount(privateKey);
+    const transport = http(chain.rpcUrls.default.http[0]);
+    const publicClient = createPublicClient({ chain, transport });
+    const walletClient = createWalletClient({ account, chain, transport });
 
     console.log("Fee recipient:", feeRecipient);
     console.log("Secret hash:", secretHash);
+    console.log("Network:", chain.name, chain.id);
+    console.log("Deployer:", account.address);
 
-    // Deploy the contract with constructor arguments
-    // @ts-ignore
-    const vunaletPayments = await hre.viem.deployContract("VunaletPayments", [
-        feeRecipient,
-        secretHash
-    ]);
-
-    const contractAddress = vunaletPayments.address;
-    console.log("VunaletPayments deployed to:", contractAddress);
-
-    // Wait for contract to be mined before trying to read from it
-    console.log("\nWaiting for contract to be mined...");
-    await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
-
-    // Try to get platform fee rate, but don't fail if it doesn't work immediately
-    try {
-        const contract = await hre.viem.getContractAt("VunaletPayments", contractAddress);
-        const platformFeeRate = await contract.read.platformFeeRate();
-        console.log("Platform fee rate:", platformFeeRate.toString(), "basis points");
-    } catch (error) {
-        console.log("⚠️  Could not read platform fee rate immediately (contract may still be mining)");
+    const balance = await publicClient.getBalance({ address: account.address });
+    console.log("Native USDC balance (wei):", balance.toString());
+    if (balance === 0n) {
+        throw new Error(
+            `Deployer ${account.address} has 0 native USDC on ${chain.name}. Arc uses USDC for gas. Fund this wallet, then rerun.`,
+        );
     }
+
+    const artifact = await hre.artifacts.readArtifact("VunarcPayments");
+    const hash = await walletClient.deployContract({
+        abi: artifact.abi,
+        bytecode: artifact.bytecode as `0x${string}`,
+        args: [feeRecipient, secretHash],
+        account,
+        maxFeePerGas: MIN_MAX_FEE_PER_GAS,
+        maxPriorityFeePerGas: MIN_MAX_FEE_PER_GAS,
+    });
+
+    console.log("Deploy tx:", hash);
+    const receipt = await publicClient.waitForTransactionReceipt({ hash });
+    const contractAddress = receipt.contractAddress;
+    if (!contractAddress) {
+        throw new Error("Deployment mined but no contract address was returned");
+    }
+
+    console.log("VunarcPayments deployed to:", contractAddress);
 
     console.log("\n=== Deployment Summary ===");
     console.log("Contract Address:", contractAddress);
     console.log("Fee Recipient:", feeRecipient);
     console.log("Platform Fee Rate: 250 basis points (2.5%)");
-    console.log("Network:", hre.network.name);
+    console.log("Network:", chain.name);
     console.log("Secret Hash:", secretHash);
-
-    // Wait for contract to be mined before verification
-    console.log("\nWaiting for contract to be mined before verification...");
-    await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 seconds
-
-    // Verify contract on CeloScan
-    console.log("Verifying contract on CeloScan...");
-    try {
-        await hre.run("verify:verify", {
-            address: contractAddress,
-            constructorArguments: [feeRecipient, secretHash],
-        });
-        console.log("✅ Contract verified successfully on CeloScan!");
-    } catch (error) {
-        console.log("❌ Verification failed:", error);
-        console.log("You can verify manually at: https://celoscan.io/verifyContract");
-    }
+    console.log("Explorer:", `${chain.blockExplorers?.default.url}/address/${contractAddress}`);
 
     console.log("\n=== Next Steps ===");
-    console.log("1. Update your .env file with:");
-    console.log(`   NEXT_PUBLIC_CELO_CONTRACT_ADDRESS=${contractAddress}`);
-    console.log("2. Update your frontend configuration");
-    console.log("3. Test the contract on CeloScan:", `https://celoscan.io/address/${contractAddress}`);
+    console.log("1. Update .env.local with:");
+    console.log(`   NEXT_PUBLIC_ARC_CONTRACT_ADDRESS=${contractAddress}`);
 }
 
 main()

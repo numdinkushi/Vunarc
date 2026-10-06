@@ -38,9 +38,9 @@ export default defineSchema({
         paymentIdentifier: v.optional(v.string()),
         // Wallet Integration
         walletAddress: v.optional(v.string()),
-        celoAddress: v.optional(v.string()), // CELO blockchain address for payments
+        arcAddress: v.optional(v.string()), // CELO blockchain address for payments
         walletConnectedAt: v.optional(v.number()),
-        preferredPaymentMethod: v.optional(v.union(v.literal("lisk_zar"), v.literal("celo"), v.literal("cash"))),
+        preferredPaymentMethod: v.optional(v.union(v.literal("usdc"), v.literal("cash"))),
         walletProvider: v.optional(v.string()), // metamask, coinbase, walletconnect
         isVerified: v.boolean(),
         createdAt: v.number(),
@@ -122,7 +122,7 @@ export default defineSchema({
         deliveryDistance: v.number(),
         deliveryCost: v.number(),
         totalCost: v.number(),
-        paymentMethod: v.union(v.literal("lisk_zar"), v.literal("celo"), v.literal("cash")),
+        paymentMethod: v.union(v.literal("usdc"), v.literal("cash")),
         paymentStatus: v.union(v.literal("pending"), v.literal("paid"), v.literal("failed")),
         orderStatus: v.union(v.literal("pending"), v.literal("confirmed"), v.literal("preparing"), v.literal("ready"), v.literal("in_transit"), v.literal("arrived"), v.literal("delivered"), v.literal("cancelled")),
 
@@ -132,14 +132,14 @@ export default defineSchema({
         assignmentMethod: v.optional(v.union(v.literal("manual"), v.literal("auto"))), // How it was assigned
 
         // Celo blockchain payment fields
-        celoTxHash: v.optional(v.string()),
-        celoBlockNumber: v.optional(v.number()),
-        celoFromAddress: v.optional(v.string()),
-        celoAmountPaid: v.optional(v.number()), // Amount in CELO
+        usdcTxHash: v.optional(v.string()),
+        usdcBlockNumber: v.optional(v.number()),
+        usdcFromAddress: v.optional(v.string()),
+        usdcAmountPaid: v.optional(v.number()), // Amount in CELO
         // Celo recipient addresses for payment distribution
-        celoFarmerAddress: v.optional(v.string()),
-        celoDispatcherAddress: v.optional(v.string()),
-        celoPlatformAddress: v.optional(v.string()),
+        usdcFarmerAddress: v.optional(v.string()),
+        usdcDispatcherAddress: v.optional(v.string()),
+        usdcPlatformAddress: v.optional(v.string()),
         specialInstructions: v.optional(v.string()),
         estimatedPickupTime: v.optional(v.string()), // Add this field
         estimatedDeliveryTime: v.optional(v.string()),

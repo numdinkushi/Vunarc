@@ -1,8 +1,35 @@
-// Contract configuration
-export const CELO_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CELO_CONTRACT_ADDRESS as `0x${string}`;
+import { defineChain } from 'viem';
 
-// Smart contract ABI for VunaletPayments
-export const VUNALET_PAYMENTS_ABI = [
+/**
+ * Arc Mainnet — https://docs.arc.io/arc/references/connect-to-arc.md
+ * Native gas token is USDC (18 decimals). Native + ERC-20 USDC share one balance.
+ */
+export const arc = defineChain({
+    id: 5042,
+    name: 'Arc',
+    nativeCurrency: {
+        name: 'USDC',
+        symbol: 'USDC',
+        decimals: 18,
+    },
+    rpcUrls: {
+        default: { http: ['https://rpc.mainnet.arc.io'] },
+    },
+    blockExplorers: {
+        default: { name: 'Arc Explorer', url: 'https://explorer.arc.io' },
+    },
+});
+
+/** Optional ERC-20 interface for native USDC (6 decimals view). Same balance as native. */
+export const ARC_USDC_ERC20_ADDRESS = '0x3600000000000000000000000000000000000000' as const;
+
+/** Mempool drops txs below this — https://docs.arc.io/arc/references/evm-differences.md */
+export const ARC_MIN_MAX_FEE_PER_GAS_WEI = 20_000_000_000n;
+
+export const ARC_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_ARC_CONTRACT_ADDRESS as `0x${string}`;
+
+// Smart contract ABI for VunarcPayments
+export const VUNARC_PAYMENTS_ABI = [
     {
         "inputs": [
             {
@@ -348,7 +375,7 @@ export const VUNALET_PAYMENTS_ABI = [
                         "type": "bool"
                     }
                 ],
-                "internalType": "struct VunaletPayments.Payment",
+                "internalType": "struct VunarcPayments.Payment",
                 "name": "",
                 "type": "tuple"
             }
@@ -678,15 +705,15 @@ export const WALLET_CONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_
 
 // App metadata for wallet connections
 export const WALLET_APP_METADATA = {
-    name: 'Vunalet',
+    name: 'Vunarc',
     description: 'Fresh produce marketplace connecting farmers and buyers',
-    url: process.env.NEXT_PUBLIC_URL || 'https://vunalet.com',
+    url: process.env.NEXT_PUBLIC_URL || 'https://vunarc.com',
     icons: ['/assets/logo/logo-192x192.png'] as string[]
 };
 
 // Divvi referral configuration
 export const DIVVI_CONFIG = {
-    // Consumer address for Vunalet (you'll need to get this from Divvi)
+    // Consumer address for Vunarc (you'll need to get this from Divvi)
     consumer: process.env.NEXT_PUBLIC_DIVVI_CONSUMER_ADDRESS || "0x0000000000000000000000000000000000000000",
     // Provider addresses for referral tracking
     providers: [

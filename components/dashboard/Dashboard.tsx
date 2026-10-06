@@ -1,6 +1,7 @@
 'use client';
 
-import { useUser, SignInButton } from '@clerk/nextjs';
+import { useUser } from '@/hooks/use-user';
+import { WalletConnect } from '../web3/WalletConnect';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { motion } from 'framer-motion';
@@ -27,9 +28,6 @@ export function Dashboard() {
         user?.id ? { clerkUserId: user.id } : "skip"
     );
 
-    console.log('Dashboard - userProfile:', userProfile);
-    console.log('Dashboard - user:', user);
-
     // Show loading state while user is being loaded
     if (!isLoaded) {
         return (
@@ -53,11 +51,11 @@ export function Dashboard() {
                 <Card className="w-full max-w-md">
                     <CardContent className="p-6 text-center">
                         <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                        <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
-                        <p className="text-gray-600 mb-4">Please sign in to access your dashboard.</p>
-                        <SignInButton mode="modal">
-                            <Button>Sign In</Button>
-                        </SignInButton>
+                        <h2 className="text-xl font-semibold mb-2">Wallet Required</h2>
+                        <p className="text-gray-600 mb-4">Connect a wallet that supports Arc and USDC.</p>
+                        <div className="flex justify-center">
+                            <WalletConnect size="default" variant="default" />
+                        </div>
                     </CardContent>
                 </Card>
             </div>

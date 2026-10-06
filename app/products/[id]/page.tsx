@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { use } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { useQuery } from 'convex/react';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/hooks/use-user';
 import { getDistance } from 'geolib';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
@@ -14,14 +14,14 @@ import { VideoBackground } from '../../../components/ui/VideoBackground';
 import { ProductDetailCard } from '../../../components/app/cards/product-detail';
 import { DeliveryMap } from '../../../components/app/maps/delivery-map/index';
 import { PaymentMethodSelector } from '../../../components/payments/PaymentMethodSelector';
-import { PurchaseFormData } from '../../../app/types';
+import { PurchaseFormData } from '../../types';
 import { PaymentMethod } from '../../../constants';
 import Link from 'next/link';
 import { DELIVERY_CONSTANTS } from '../../../constants/delivery';
 import { useRouter } from 'next/navigation';
 import { useMutation } from 'convex/react';
 import { toast } from 'sonner';
-import { useCeloOrderProcessing } from '../../../hooks/use-celo-order-processing';
+import { useUsdcOrderProcessing } from '../../../hooks/use-usdc-order-processing';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string; }>; }) {
     // Unwrap params using React.use()
@@ -38,7 +38,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         deliveryDistance: 0,
         deliveryCost: 0,
         totalCost: 0,
-        paymentMethod: 'lisk_zar', // Default payment method
+        paymentMethod: 'usdc',
     });
     const [isCalculating, setIsCalculating] = useState(false);
     const [showPaymentSelector, setShowPaymentSelector] = useState(false);
@@ -65,75 +65,79 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
     // Auto-populate form with user data when available
     useEffect(() => {
-        if (user && userProfile && isLoaded) {
-            setFormData(prev => ({
-                ...prev,
-                name: `${userProfile.firstName} ${userProfile.lastName}`,
-                email: user.emailAddresses[0]?.emailAddress || '',
-                phone: userProfile.phone || '',
-                address: userProfile.addressFull || userProfile.address || '',
-            }));
-        }
+        if (!user || !userProfile || !isLoaded) return;
+
+        const name = `${userProfile.firstName} ${userProfile.lastName}`;
+        const email = user.email;
+        const phone = userProfile.phone || '';
+        const address = userProfile.addressFull || userProfile.address || '';
+
+        setFormData(prev => {
+            if (
+                prev.name === name &&
+                prev.email === email &&
+                prev.phone === phone &&
+                prev.address === address
+            ) {
+                return prev;
+            }
+            return { ...prev, name, email, phone, address };
+        });
     }, [user, userProfile, isLoaded]);
 
-    const calculateDeliveryCost = useCallback(async () => {
-        if (!product || !formData.address) return;
+    const farmerLat = farmer?.coordinates?.lat;
+    const farmerLng = farmer?.coordinates?.lng;
+    const customerLat = userProfile?.coordinates?.lat;
+    const customerLng = userProfile?.coordinates?.lng;
+    const productPrice = product?.price;
+    const hasDeliveryAddress = Boolean(formData.address);
 
-        setIsCalculating(true);
+    useEffect(() => {
+        if (productPrice == null || !hasDeliveryAddress) return;
+
         try {
-            let distance = 0;
+            let distance = 25;
 
-            // Get farmer coordinates from farmer profile
-            const farmerCoords = farmer?.coordinates;
-
-            // Get customer coordinates from user profile
-            const customerCoords = userProfile?.coordinates;
-
-            console.log('Farmer coords:', farmerCoords);
-            console.log('Customer coords:', customerCoords);
-
-            if (farmerCoords && customerCoords &&
-                typeof farmerCoords.lat === 'number' &&
-                typeof farmerCoords.lng === 'number' &&
-                typeof customerCoords.lat === 'number' &&
-                typeof customerCoords.lng === 'number') {
-
-                // Calculate actual distance using geolib
+            if (
+                typeof farmerLat === 'number' &&
+                typeof farmerLng === 'number' &&
+                typeof customerLat === 'number' &&
+                typeof customerLng === 'number'
+            ) {
                 const distanceInMeters = getDistance(
-                    { latitude: farmerCoords.lat, longitude: farmerCoords.lng },
-                    { latitude: customerCoords.lat, longitude: customerCoords.lng }
+                    { latitude: farmerLat, longitude: farmerLng },
+                    { latitude: customerLat, longitude: customerLng }
                 );
-
-                distance = Math.round((distanceInMeters / 1000) * 10) / 10; // Convert to km and round to 1 decimal
-
-                console.log('Calculated distance:', distance, 'km');
-            } else {
-                console.log('Missing coordinates, using fallback');
-                // Fallback to a reasonable default distance
-                distance = 25; // Default 25km instead of random
+                distance = Math.round((distanceInMeters / 1000) * 10) / 10;
             }
 
-            const deliveryCost = distance * DELIVERY_CONSTANTS.COST_PER_KM; // 0.005 lisk per km
-            const totalCost = (product.price * formData.quantity) + deliveryCost;
+            const deliveryCost = distance * DELIVERY_CONSTANTS.COST_PER_KM;
+            const totalCost = (productPrice * formData.quantity) + deliveryCost;
 
-            setFormData(prev => ({
-                ...prev,
-                deliveryDistance: distance,
-                deliveryCost,
-                totalCost
-            }));
+            setFormData(prev => {
+                if (
+                    prev.deliveryDistance === distance &&
+                    prev.deliveryCost === deliveryCost &&
+                    prev.totalCost === totalCost
+                ) {
+                    return prev;
+                }
+                return { ...prev, deliveryDistance: distance, deliveryCost, totalCost };
+            });
         } catch (error) {
             console.error('Error calculating delivery cost:', error);
         } finally {
             setIsCalculating(false);
         }
-    }, [product, formData.address, formData.quantity, farmer, userProfile]);
-
-    useEffect(() => {
-        if (product) {
-            calculateDeliveryCost();
-        }
-    }, [product, formData.address, formData.quantity, farmer, userProfile, calculateDeliveryCost]);
+    }, [
+        productPrice,
+        hasDeliveryAddress,
+        formData.quantity,
+        farmerLat,
+        farmerLng,
+        customerLat,
+        customerLng,
+    ]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -146,8 +150,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     const createOrder = useMutation(api.orders.createOrder);
     const updatePaymentMethod = useMutation(api.orders.updatePaymentMethod);
 
-    // Add CELO order processing hook
-    const { processOrderWithCeloPayment, isProcessing: isCeloProcessing } = useCeloOrderProcessing();
+    const { processOrderWithUsdcPayment, isProcessing: isUsdcProcessing } = useUsdcOrderProcessing();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -209,21 +212,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         setIsSubmitting(true);
 
         try {
-            // Use CELO order processing for CELO payments
-            if (formData.paymentMethod === 'celo') {
-                console.log('🚀 Processing CELO order...');
-                const result = await processOrderWithCeloPayment(orderData);
+            if (formData.paymentMethod === 'usdc') {
+                const result = await processOrderWithUsdcPayment(orderData);
 
                 if (result.success) {
-                    toast.success('Order created successfully! You can pay when the order arrives.');
-                    // Redirect to dashboard after successful CELO order creation
-                    router.push('/dashboard');
-
-                    setTimeout(() => {
-                        router.push('/dashboard');
-                    }, 500);
+                    toast.success('Order created. Pay with USDC on Arc from your dashboard.');
+                    window.setTimeout(() => {
+                        window.location.assign('/dashboard');
+                    }, 1200);
+                    return;
                 } else {
-                    toast.error('Failed to process CELO order. Please try again.');
+                    toast.error('Failed to create the USDC order. Please try again.');
                 }
             } else {
                 // Use regular order creation for other payment methods
@@ -364,7 +363,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                             farmer={farmer}
                             formData={formData}
                             isCalculating={isCalculating}
-                            isProcessing={isSubmitting}
+                            isProcessing={isSubmitting || isUsdcProcessing}
                             handleInputChange={handleInputChange}
                             handleSubmit={handleSubmit}
                         />

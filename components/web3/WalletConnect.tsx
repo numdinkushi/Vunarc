@@ -11,12 +11,11 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { CELO_NETWORKS } from '@/constants';
+import { arc, ARC_NETWORKS } from '@/constants';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -49,45 +48,25 @@ export function WalletConnect({
         return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
     };
 
-    const getNetworkBadge = () => {
-        if (!chain) return null;
+    const isCorrectNetwork = () => chain?.id === arc.id;
 
-        const isMainnet = chain.id === CELO_NETWORKS.MAINNET.chainId;
-        const isTestnet = chain.id === CELO_NETWORKS.ALFAJORES.chainId;
-
-        if (isMainnet) {
-            return <Badge variant="default" className="text-xs">Celo</Badge>;
-        } else if (isTestnet) {
-            return <Badge variant="secondary" className="text-xs">Alfajores</Badge>;
-        } else {
-            return <Badge variant="destructive" className="text-xs">Wrong Network</Badge>;
-        }
-    };
-
-    const isCorrectNetwork = () => {
-        if (!chain) return false;
-        return chain.id === CELO_NETWORKS.MAINNET.chainId || chain.id === CELO_NETWORKS.ALFAJORES.chainId;
-    };
-
-    const handleSwitchToCelo = async (chainId: number) => {
+    const handleSwitchToArc = async () => {
         try {
-            await switchChain({ chainId });
-            toast.success('Successfully switched to Celo network');
+            await switchChain({ chainId: ARC_NETWORKS.MAINNET.chainId });
+            toast.success('Switched to Arc');
             setShowNetworkSwitchDialog(false);
         } catch (error) {
             console.error('Failed to switch network:', error);
-            toast.error('Failed to switch network. Please switch manually in your wallet.');
+            toast.error('Failed to switch network. Switch to Arc in your wallet.');
         }
     };
 
-    // Auto-prompt for network switch when wallet connects on wrong network
     useEffect(() => {
         if (isConnected && address && !isCorrectNetwork() && !hasPromptedForSwitch) {
             setShowNetworkSwitchDialog(true);
             setHasPromptedForSwitch(true);
         }
 
-        // Reset the prompt flag when wallet disconnects
         if (!isConnected) {
             setHasPromptedForSwitch(false);
         }
@@ -103,7 +82,9 @@ export function WalletConnect({
                             <span className="hidden sm:inline">
                                 {formatAddress(address)}
                             </span>
-                            {!isCorrectNetwork() && (
+                            {isCorrectNetwork() ? (
+                                <Badge variant="default" className="text-xs">Arc</Badge>
+                            ) : (
                                 <AlertCircle className="h-4 w-4 text-red-500" />
                             )}
                         </Button>
@@ -112,7 +93,11 @@ export function WalletConnect({
                         <div className="p-2">
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-sm font-medium">Connected Wallet</span>
-                                {getNetworkBadge()}
+                                {isCorrectNetwork() ? (
+                                    <Badge variant="default" className="text-xs">Arc</Badge>
+                                ) : (
+                                    <Badge variant="destructive" className="text-xs">Wrong Network</Badge>
+                                )}
                             </div>
                             <div className="text-xs text-muted-foreground mb-2">
                                 {formatAddress(address)}
@@ -120,7 +105,7 @@ export function WalletConnect({
                             {!isCorrectNetwork() && (
                                 <div className="text-xs text-red-500 mb-2 flex items-center gap-1">
                                     <AlertCircle className="h-3 w-3" />
-                                    Switch to Celo to set your address
+                                    Switch to Arc to pay with USDC
                                 </div>
                             )}
                         </div>
@@ -129,37 +114,20 @@ export function WalletConnect({
                             <>
                                 <DropdownMenuSeparator />
                                 <div className="p-2">
-                                    <div className="text-xs font-medium mb-2">Switch Network:</div>
-                                    <div className="space-y-1">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="w-full text-xs h-7"
-                                            onClick={() => handleSwitchToCelo(CELO_NETWORKS.MAINNET.chainId)}
-                                            disabled={isSwitching}
-                                        >
-                                            {isSwitching ? (
-                                                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                                            ) : (
-                                                <ArrowRight className="h-3 w-3 mr-1" />
-                                            )}
-                                            Celo Mainnet
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="w-full text-xs h-7"
-                                            onClick={() => handleSwitchToCelo(CELO_NETWORKS.ALFAJORES.chainId)}
-                                            disabled={isSwitching}
-                                        >
-                                            {isSwitching ? (
-                                                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                                            ) : (
-                                                <ArrowRight className="h-3 w-3 mr-1" />
-                                            )}
-                                            Alfajores Testnet
-                                        </Button>
-                                    </div>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="w-full text-xs h-7"
+                                        onClick={handleSwitchToArc}
+                                        disabled={isSwitching}
+                                    >
+                                        {isSwitching ? (
+                                            <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                                        ) : (
+                                            <ArrowRight className="h-3 w-3 mr-1" />
+                                        )}
+                                        Arc Mainnet
+                                    </Button>
                                 </div>
                             </>
                         )}
@@ -172,55 +140,34 @@ export function WalletConnect({
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                {/* Network Switch Dialog */}
                 <AlertDialog open={showNetworkSwitchDialog} onOpenChange={setShowNetworkSwitchDialog}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle className="flex items-center gap-2">
                                 <AlertCircle className="h-5 w-5 text-orange-500" />
-                                Switch to Celo Network
+                                Switch to Arc
                             </AlertDialogTitle>
                             <AlertDialogDescription>
-                                Your wallet is connected to <strong>{chain?.name || 'Unknown Network'}</strong>,
-                                but Vunalet requires the Celo network to process payments and set your Celo address.
-                                <br /><br />
-                                Please switch to one of the supported Celo networks:
+                                Your wallet is on <strong>{chain?.name || 'another network'}</strong>.
+                                Vunarc settles orders in USDC on Arc, and Arc uses USDC for gas.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <div className="py-4">
-                            <div className="space-y-3">
-                                <Button
-                                    className="w-full justify-between"
-                                    onClick={() => handleSwitchToCelo(CELO_NETWORKS.MAINNET.chainId)}
-                                    disabled={isSwitching}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        Celo Mainnet
-                                    </div>
-                                    {isSwitching ? (
-                                        <RefreshCw className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <ArrowRight className="h-4 w-4" />
-                                    )}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="w-full justify-between"
-                                    onClick={() => handleSwitchToCelo(CELO_NETWORKS.ALFAJORES.chainId)}
-                                    disabled={isSwitching}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                        Alfajores Testnet
-                                    </div>
-                                    {isSwitching ? (
-                                        <RefreshCw className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <ArrowRight className="h-4 w-4" />
-                                    )}
-                                </Button>
-                            </div>
+                            <Button
+                                className="w-full justify-between"
+                                onClick={handleSwitchToArc}
+                                disabled={isSwitching}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    Arc Mainnet
+                                </div>
+                                {isSwitching ? (
+                                    <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <ArrowRight className="h-4 w-4" />
+                                )}
+                            </Button>
                         </div>
                         <AlertDialogFooter>
                             <AlertDialogCancel onClick={() => setShowNetworkSwitchDialog(false)}>
@@ -245,16 +192,14 @@ export function WalletConnect({
                 <div className="p-2 mb-2">
                     <div className="text-sm font-medium mb-1">Connect Wallet</div>
                     <div className="text-xs text-muted-foreground">
-                        Choose your preferred wallet to connect
+                        Connect a wallet that can hold USDC on Arc
                     </div>
                 </div>
                 <DropdownMenuSeparator />
-                {connectors
-                    .filter((connector) => connector.id !== 'injected')
-                    .map((connector) => (
+                {connectors.map((connector) => (
                         <DropdownMenuItem
-                            key={connector.id}
-                            onClick={() => connect({ connector })}
+                            key={connector.uid}
+                            onClick={() => connect({ connector, chainId: arc.id })}
                             className="cursor-pointer"
                             disabled={isPending}
                         >
@@ -263,19 +208,20 @@ export function WalletConnect({
                                     <Wallet className="h-3 w-3" />
                                 </div>
                                 <span>{connector.name}</span>
-                                {connector.id === 'metaMask' && (
+                                {(connector.id === 'metaMask' || connector.id === 'injected') && (
                                     <Badge variant="secondary" className="text-xs ml-auto">
-                                        Recommended
+                                        Browser
+                                    </Badge>
+                                )}
+                                {connector.id === 'walletConnect' && (
+                                    <Badge variant="secondary" className="text-xs ml-auto">
+                                        Mobile
                                     </Badge>
                                 )}
                             </div>
                         </DropdownMenuItem>
                     ))}
-                <DropdownMenuSeparator />
-                <div className="p-2 text-xs text-muted-foreground">
-                    By connecting, you agree to our terms of service
-                </div>
             </DropdownMenuContent>
         </DropdownMenu>
     );
-} 
+}

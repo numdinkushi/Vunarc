@@ -99,7 +99,7 @@ export function WalletSettings() {
                             
                             {chainId && (
                                 <div className="text-sm text-muted-foreground">
-                                    Network: {chainId === 42220 ? 'Celo Mainnet' : chainId === 44787 ? 'Alfajores Testnet' : `Chain ${chainId}`}
+                                    Network: {chainId === 5042 ? 'Arc' : `Chain ${chainId}`}
                                 </div>
                             )}
                         </div>
@@ -161,11 +161,8 @@ export function WalletSettings() {
                                     onClick={() => handlePaymentMethodChange(method)}
                                     className="justify-start"
                                 >
-                                    {method === PaymentMethod.LISK_ZAR && "💚"}
-                                    {method === PaymentMethod.CELO && "🔵"}
-                                    {method === PaymentMethod.CASH && "💵"}
-                                    <span className="ml-2 capitalize">
-                                        {method.replace('_', ' ')}
+                                    <span className="ml-2">
+                                        {method === PaymentMethod.USDC ? 'USDC on Arc' : 'Cash on Delivery'}
                                     </span>
                                     {preferredPaymentMethod === method && (
                                         <CheckCircle className="h-4 w-4 ml-auto" />

@@ -1,6 +1,6 @@
 # 📊 Custom Table System
 
-This directory contains a reusable table system inspired by the fuse project's CustomTable structure, but simplified for the vunalet project.
+This directory contains a reusable table system inspired by the fuse project's CustomTable structure, but simplified for the vunarc project.
 
 ## 📁 Directory Structure
 

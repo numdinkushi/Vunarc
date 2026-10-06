@@ -1,5 +1,7 @@
 # API Call Flow - Clean Architecture
 
+> Sign-in is a wallet connection, profiles are stored in Convex, and USDC payments settle on Arc. See [Arc payments](../../docs/ARC_INTEGRATION.md).
+
 ## Complete Flow Diagram
 
 ```
